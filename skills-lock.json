@@ -1,0 +1,222 @@
+{
+  "version": 2,
+  "skills": {
+    "authjs-skills": {
+      "source": "gocallum/nextjs16-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/authjs-skills/SKILL.md",
+      "computedHash": "a614d5f40da040aed765023476a864631ecc6c3ec2e0f9979e83dcce69418357",
+      "installMode": "copy"
+    },
+    "prisma-client-api": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-client-api/SKILL.md",
+      "computedHash": "a4810158b4b436a69e782e6fab95a0ed5e5e0b2786c2ed00322051d29c4c2b64",
+      "installMode": "copy"
+    },
+    "prisma-orm-setup": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-orm-setup/SKILL.md",
+      "computedHash": "04fe23d99323d5f97675b5038d7d42cec0b5d0ff5871929bd73412afb7941218",
+      "installMode": "copy"
+    },
+    "tailwindcss": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss/SKILL.md",
+      "computedHash": "fc1e46e2d9964b1c4f327e90d91b35b12d6246cef06529bc249615ee432aee71",
+      "installMode": "copy"
+    },
+    "tailwindcss-backgrounds-borders": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-backgrounds-borders/SKILL.md",
+      "computedHash": "f3112463c91265dd60d627f1f7029b105e10a424af6725ecc6b31046be6f2386",
+      "installMode": "copy"
+    },
+    "tailwindcss-colors": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-colors/SKILL.md",
+      "computedHash": "cc755df2c9ba930c025634eba8bd4e37b206e7879eab48efcf2f52589d4713a2",
+      "installMode": "copy"
+    },
+    "tailwindcss-compatibility": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-compatibility/SKILL.md",
+      "computedHash": "3887e59c8707bfb2ee9dc98f671237d173b71b1b63fe32aff8a51dc1c96f85b0",
+      "installMode": "copy"
+    },
+    "tailwindcss-core-concepts": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-core-concepts/SKILL.md",
+      "computedHash": "88243e063e7f22e417b190b952bf9f005c94c75e6ed06dbed29b908b50ce42da",
+      "installMode": "copy"
+    },
+    "tailwindcss-custom-styles": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-custom-styles/SKILL.md",
+      "computedHash": "8937ea4b7a74368ee83f5dfbc263d7cfb8cd48ef48771a0ab9838ec189c395a6",
+      "installMode": "copy"
+    },
+    "tailwindcss-dark-mode": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-dark-mode/SKILL.md",
+      "computedHash": "7c055de9d8191cad253137b9f9a9f36b67da5bf4e68405eaed087a4ccf81f591",
+      "installMode": "copy"
+    },
+    "tailwindcss-effects-filters": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-effects-filters/SKILL.md",
+      "computedHash": "d4155c3fd3aab31830edcd202450559d8c626c768df70ed90bcb7ec8b4993ccc",
+      "installMode": "copy"
+    },
+    "tailwindcss-flex-grid": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-flex-grid/SKILL.md",
+      "computedHash": "171c30b88df9086befe3e5b293e4af58f835413b844eb4c28e0646b3b659c3ed",
+      "installMode": "copy"
+    },
+    "tailwindcss-functions-directives": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-functions-directives/SKILL.md",
+      "computedHash": "fe3378ebd91e7433ba25024d5702169b40a76c84b030e3ba602ed996764e2c19",
+      "installMode": "copy"
+    },
+    "tailwindcss-installation": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-installation/SKILL.md",
+      "computedHash": "0208044459cf0e1c1e5407686751ccb1ad470232142718f521656913f2e50932",
+      "installMode": "copy"
+    },
+    "tailwindcss-interactivity": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-interactivity/SKILL.md",
+      "computedHash": "15ab422ae3c2a7406c704b58441b1897270515b317b49792a34226d6b0886c8c",
+      "installMode": "copy"
+    },
+    "tailwindcss-layout": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-layout/SKILL.md",
+      "computedHash": "d8f3c1de175924a18d26ca3acfe88e8faca56d6608fd06b844c6f36e4ec3c856",
+      "installMode": "copy"
+    },
+    "tailwindcss-preflight": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-preflight/SKILL.md",
+      "computedHash": "ac1ff1cc07a118773e239c2b098cd3d502846d6085851e2e62eb9c7829818f04",
+      "installMode": "copy"
+    },
+    "tailwindcss-responsive-design": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-responsive-design/SKILL.md",
+      "computedHash": "29cada457f4d041ee5f420c9ace346bb2310024b817a6fffac4bec6237b7ab47",
+      "installMode": "copy"
+    },
+    "tailwindcss-skills-upgrade": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": ".codex/skills/tailwindcss-skills-upgrade/SKILL.md",
+      "computedHash": "c1f410844b45b3e5ca6670387e6d3ebd25d17e2ac352477cf42d485827c684ab",
+      "installMode": "copy"
+    },
+    "tailwindcss-source-detection": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-source-detection/SKILL.md",
+      "computedHash": "013236a7e066a069ee8bf8a85253e8d62a760aaf94cc98c485bcd8c5972017a6",
+      "installMode": "copy"
+    },
+    "tailwindcss-spacing-sizing": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-spacing-sizing/SKILL.md",
+      "computedHash": "b8f3fcf46e2ac1e34578163c4da1a18941332bc77eabca383be16ae421d6f42d",
+      "installMode": "copy"
+    },
+    "tailwindcss-states-variants": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-states-variants/SKILL.md",
+      "computedHash": "1e3937010032775afed73dc75818cade66855f7eaba5efff71ecb9ce6e5e577e",
+      "installMode": "copy"
+    },
+    "tailwindcss-svg-accessibility": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-svg-accessibility/SKILL.md",
+      "computedHash": "f1f73e18a954a3ac29de957f38371050d01ee7a00478c61636fb219ac0b40651",
+      "installMode": "copy"
+    },
+    "tailwindcss-theme": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-theme/SKILL.md",
+      "computedHash": "bb0f1ec256fe32efb6027272e81987837c5d3e1eeb2f46da06f778e6fae7b4dc",
+      "installMode": "copy"
+    },
+    "tailwindcss-transforms": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-transforms/SKILL.md",
+      "computedHash": "f2c54d6f2df6b43212574093efa16ce4d35f860a47327e1ffd2dc564aea92b78",
+      "installMode": "copy"
+    },
+    "tailwindcss-transitions-animation": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-transitions-animation/SKILL.md",
+      "computedHash": "ee726b61fd210265aa348ccf22144b160958e4fd4b94389fd906a522525e8446",
+      "installMode": "copy"
+    },
+    "tailwindcss-typography": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-typography/SKILL.md",
+      "computedHash": "75876ae22e2b2556d73323b90ca71579a8859f4c35f6a536ed702a891f145f9a",
+      "installMode": "copy"
+    },
+    "tailwindcss-upgrade-v4": {
+      "source": "huxy2023/tailwindcss-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwindcss-upgrade-v4/SKILL.md",
+      "computedHash": "8126e529f08e1d2495c939801599d4c645007e55cdb84c5f6bbfc759a5bf2e2b",
+      "installMode": "copy"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/composition-patterns/SKILL.md",
+      "computedHash": "f711ed8b16162eaa712abbcdbbae6c926f86c57e60127735fecc3ad0dd85b3fa",
+      "installMode": "copy"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "7991ed4fbecdac23f47c1a40c243e00a212a9e7f3604db93959b3ae11dffe299",
+      "installMode": "copy"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "4f68ae07187fb0d1fb78c88b503d089da4cf5a9d9625d1f2e425b1590bf96d92",
+      "installMode": "copy"
+    }
+  }
+}

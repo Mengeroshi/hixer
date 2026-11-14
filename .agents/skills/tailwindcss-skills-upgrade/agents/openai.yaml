@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tailwind Skills Upgrade"
+  short_description: "Update Tailwind CSS skills safely"
+  default_prompt: "Use $tailwindcss-skills-upgrade to update this Tailwind CSS skills repository for the latest Tailwind release."
