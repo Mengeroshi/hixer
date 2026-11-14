@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* skill markdown uses bg-[url(...)], which Turbopack tries to load as a module */
+@source not "../../.agents";
 
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
