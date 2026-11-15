@@ -3,7 +3,16 @@ import type { NextRequest } from "next/server"
 
 import { getToken } from "next-auth/jwt"
 
-function isProtectedPath(pathname: string) {
+function isPublicPath(pathname: string) {
+  return (
+    pathname === "/login" ||
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/_next/") ||
+    pathname === "/favicon.ico"
+  )
+}
+
+function isStoreManagePath(pathname: string) {
   if (pathname === "/mixes/new") {
     return true
   }
@@ -12,7 +21,8 @@ function isProtectedPath(pathname: string) {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  if (!isProtectedPath(pathname)) {
+
+  if (isPublicPath(pathname)) {
     return NextResponse.next()
   }
 
@@ -27,7 +37,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(login)
   }
 
-  if (!token.isStore) {
+  if (isStoreManagePath(pathname) && !token.isStore) {
     return NextResponse.redirect(new URL("/", request.url))
   }
 
@@ -35,5 +45,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/mixes/new", "/mixes/:slug/edit"],
+  matcher: ["/((?!_next/static|_next/image|.*\\..*).*)"],
 }
