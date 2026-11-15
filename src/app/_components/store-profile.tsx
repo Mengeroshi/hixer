@@ -5,7 +5,7 @@ import {
   Bookmark,
   House,
   LayoutGrid,
-  Menu,
+  LogOut,
   Plus,
   Search,
   UserRound,
@@ -13,6 +13,7 @@ import {
 
 import { Button } from "~/components/ui/button"
 import { shop } from "~/data/afterglow"
+import { signOutAction } from "~/server/auth/actions"
 
 type MixTile = {
   slug: string
@@ -20,6 +21,13 @@ type MixTile = {
   image: string
   house: boolean
   description: string
+}
+
+type ProfileUser = {
+  id: string
+  name?: string | null
+  email?: string | null
+  image?: string | null
 }
 
 const tabs = [
@@ -35,7 +43,13 @@ const nav = [
   { label: "Profile", icon: UserRound, current: true },
 ] as const
 
-export function StoreProfile({ mixes }: { mixes: MixTile[] }) {
+export function StoreProfile({
+  mixes,
+  user,
+}: {
+  mixes: MixTile[]
+  user: ProfileUser | null
+}) {
   const stats = [
     { label: "Mixes", value: String(mixes.length) },
     { label: "Followers", value: shop.followers },
@@ -50,13 +64,25 @@ export function StoreProfile({ mixes }: { mixes: MixTile[] }) {
             <span />
             <h1 className="text-base font-heading">{shop.handle}</h1>
             <div className="flex justify-end">
-              <button
-                type="button"
-                aria-label="Menu"
-                className="grid size-10 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
-              >
-                <Menu className="size-4" />
-              </button>
+              {user ? (
+                <form action={signOutAction}>
+                  <button
+                    type="submit"
+                    aria-label="Sign out"
+                    className="grid size-10 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
+                  >
+                    <LogOut className="size-4" />
+                  </button>
+                </form>
+              ) : (
+                <Link
+                  href="/login"
+                  aria-label="Sign in"
+                  className="grid size-10 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
+                >
+                  <UserRound className="size-4" />
+                </Link>
+              )}
             </div>
           </header>
 
