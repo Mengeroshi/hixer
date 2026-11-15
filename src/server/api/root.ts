@@ -1,3 +1,4 @@
+import { checkoutRouter } from "~/server/api/routers/checkout";
 import { mixRouter } from "~/server/api/routers/mix";
 import { postRouter } from "~/server/api/routers/post";
 import { storeRouter } from "~/server/api/routers/store";
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   post: postRouter,
   store: storeRouter,
   mix: mixRouter,
+  checkout: checkoutRouter,
 });
 
 // export type definition of API

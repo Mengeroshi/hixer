@@ -28,18 +28,21 @@ model Post {
 }
 
 model Store {
-    id        String   @id @default(cuid())
-    slug      String   @unique
-    name      String
-    handle    String
-    bio       String   @default("")
-    followers String   @default("0")
-    following Int      @default(0)
-    ownerId   String?  @unique
-    owner     User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
-    mixes     Mix[]
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id          String   @id @default(cuid())
+    slug        String   @unique
+    name        String
+    handle      String
+    bio         String   @default("")
+    followers   String   @default("0")
+    following   Int      @default(0)
+    payoutName  String   @default("")
+    payoutClabe String   @default("")
+    ownerId     String?  @unique
+    owner       User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+    mixes       Mix[]
+    orders      Order[]
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 }
 
 model Mix {
@@ -108,6 +111,48 @@ model User {
     posts         Post[]
     store         Store?
     authoredMixes Mix[]
+    orders        Order[]
+}
+
+/// Checkout order backed by a Pey transaction (CoDi QR / push / payment link).
+model Order {
+    id               String    @id @default(cuid())
+    /// Pey transaction ULID when known (set once paid / push created).
+    peyTransactionId String?   @unique
+    status           String    @default("PENDING")
+    amount           Float
+    amountBase       Float?
+    amountTip        Float?
+    amountFee        Float?
+    currency         String    @default("MXN")
+    paymentMethod    String?
+    payableType      String?
+    payableId        String?
+    description      String    @default("")
+    trackingKey      String?
+    numRef           String?
+    /// Cart lines: [{ slug, name, price, quantity }]
+    items            Json
+    metadata         Json?
+    raw              Json?
+    /// Store the buyer purchased from (relation + snapshot for history).
+    storeId          String
+    store            Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+    storeSlug        String
+    storeName        String
+    storeHandle      String    @default("")
+    userId           String
+    user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    paidAt           DateTime?
+    peyCreatedAt     DateTime?
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
+
+    @@index([storeId])
+    @@index([storeSlug])
+    @@index([userId])
+    @@index([status])
+    @@index([numRef])
 }
 
 model VerificationToken {
