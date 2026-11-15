@@ -1,5 +1,7 @@
 import Link from "next/link"
-import { ArrowLeft, Pencil, Store } from "lucide-react"
+import { ArrowLeft, Store } from "lucide-react"
+
+import { MixActions } from "~/app/_components/mix-actions"
 
 export type MixDetailData = {
   slug: string
@@ -151,14 +153,16 @@ export function MixDetail({
           ) : null}
         </div>
 
-        {canEdit ? (
-          <Link
-            href={`/mixes/${mix.slug}/edit`}
-            aria-label="Edit mix"
-            className="absolute right-4 bottom-4 z-10 grid size-12 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
-          >
-            <Pencil className="size-5" />
-          </Link>
+        {mix.store ? (
+          <MixActions
+            slug={mix.slug}
+            name={mix.name}
+            price={mix.price}
+            image={mix.image}
+            available={mix.available}
+            canEdit={canEdit}
+            store={mix.store}
+          />
         ) : null}
       </div>
     </div>

@@ -78,8 +78,8 @@ export function StoreProfile({
 
   return (
     <div className="min-h-dvh bg-neutral-200 text-foreground">
-      <div className="mx-auto flex h-dvh w-full max-w-[430px] flex-col bg-background">
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
+      <div className="relative mx-auto flex h-dvh w-full max-w-[430px] flex-col bg-background">
+        <div className="flex-1 overflow-y-auto px-4 pb-28">
           <header className="grid grid-cols-[1fr_auto_1fr] items-center py-4">
             <span />
             <h1 className="text-base font-heading">{store.handle}</h1>
@@ -211,7 +211,7 @@ export function StoreProfile({
           </ul>
         </div>
 
-        <div className="mx-4 mb-4 flex flex-col items-end gap-3">
+        <div className="relative z-30 mx-4 mb-4 flex flex-col items-end gap-3">
           {canManage ? (
             <Link
               href="/mixes/new"
