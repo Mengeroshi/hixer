@@ -2,46 +2,21 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState, useSyncExternalStore, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { ArrowLeft, Plus, X } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
-import type { Recipe } from "~/data/afterglow"
-import {
-  createMixSlug,
-  readCreatedMix,
-  subscribeCreatedMixes,
-  writeCreatedMix,
-} from "~/lib/created-mixes"
-import {
-  readMixOverride,
-  writeMixOverride,
-  type MixOverride,
-} from "~/lib/mix-overrides"
+import type { MixDetailData } from "~/app/_components/mix-detail"
+import { api } from "~/trpc/react"
 
-type MixEditProps = {
-  recipe: Recipe & {
-    slug: string
-    description: string
-    ingredients: string[]
-    available: boolean
-  }
-}
-
-function initialState(
-  recipe: MixEditProps["recipe"],
-): MixOverride {
-  const saved = readMixOverride(recipe.slug)
-  if (saved) return saved
-  return {
-    name: recipe.name,
-    price: recipe.price,
-    description: recipe.description,
-    ingredients: [...recipe.ingredients],
-    preparation: [...(recipe.preparation ?? [])],
-    tags: [...(recipe.tags ?? [])],
-    available: recipe.available,
-  }
+type MixDraft = {
+  name: string
+  price: string
+  description: string
+  ingredients: string[]
+  preparation: string[]
+  tags: string[]
+  available: boolean
 }
 
 function updateItem(items: string[], index: number, value: string) {
@@ -52,7 +27,7 @@ function removeItem(items: string[], index: number) {
   return items.filter((_, itemIndex) => itemIndex !== index)
 }
 
-const emptyDraft: MixOverride = {
+const emptyDraft: MixDraft = {
   name: "",
   price: "",
   description: "",
@@ -67,8 +42,9 @@ type MixFormProps = {
   backHref: string
   backLabel: string
   image?: string
-  initial: MixOverride
-  onSave: (draft: MixOverride) => void
+  initial: MixDraft
+  saving?: boolean
+  onSave: (draft: MixDraft) => void
 }
 
 function MixForm({
@@ -77,6 +53,7 @@ function MixForm({
   backLabel,
   image,
   initial,
+  saving = false,
   onSave,
 }: MixFormProps) {
   const [draft, setDraft] = useState(initial)
@@ -365,6 +342,7 @@ function MixForm({
           <div className="px-4 pb-4">
             <Button
               type="submit"
+              disabled={saving}
               className="h-12 w-full rounded-xl bg-surface-2 text-foreground"
             >
               Save
@@ -376,26 +354,30 @@ function MixForm({
   )
 }
 
-export function MixEdit({ recipe }: MixEditProps) {
+export function MixEdit({ mix }: { mix: MixDetailData }) {
   const router = useRouter()
+  const update = api.mix.update.useMutation({
+    onSuccess: () => router.push(`/mixes/${mix.slug}`),
+  })
 
   return (
     <MixForm
       title="Edit mix"
-      backHref={`/mixes/${recipe.slug}`}
+      backHref={`/mixes/${mix.slug}`}
       backLabel="Back to mix"
-      image={recipe.image}
-      initial={initialState(recipe)}
-      onSave={(draft) => {
-        writeMixOverride(recipe.slug, draft)
-        router.push(`/mixes/${recipe.slug}`)
-      }}
+      image={mix.image || undefined}
+      initial={mix}
+      saving={update.isPending}
+      onSave={(draft) => update.mutate({ slug: mix.slug, ...draft })}
     />
   )
 }
 
 export function MixCreate() {
   const router = useRouter()
+  const create = api.mix.create.useMutation({
+    onSuccess: (mix) => router.push(`/mixes/${mix.slug}`),
+  })
 
   return (
     <MixForm
@@ -403,53 +385,8 @@ export function MixCreate() {
       backHref="/"
       backLabel="Back to profile"
       initial={emptyDraft}
-      onSave={(draft) => {
-        const slug = createMixSlug(draft.name)
-        writeCreatedMix({ ...draft, slug })
-        router.push(`/mixes/${slug}`)
-      }}
-    />
-  )
-}
-
-export function CreatedMixEdit({ slug }: { slug: string }) {
-  const router = useRouter()
-  const mix = useSyncExternalStore(
-    subscribeCreatedMixes,
-    () => readCreatedMix(slug),
-    () => null,
-  )
-
-  if (!mix) {
-    return (
-      <div className="min-h-dvh bg-neutral-200 text-foreground">
-        <div className="mx-auto flex h-dvh w-full max-w-[430px] flex-col bg-background px-4">
-          <header className="flex items-center gap-3 py-4">
-            <Link
-              href="/"
-              aria-label="Back to profile"
-              className="grid size-10 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
-            >
-              <ArrowLeft className="size-4" />
-            </Link>
-            <p className="text-sm font-heading">Edit mix</p>
-          </header>
-          <p className="text-sm">This mix is not saved in this browser session.</p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <MixForm
-      title="Edit mix"
-      backHref={`/mixes/${slug}`}
-      backLabel="Back to mix"
-      initial={mix}
-      onSave={(draft) => {
-        writeCreatedMix({ ...draft, slug })
-        router.push(`/mixes/${slug}`)
-      }}
+      saving={create.isPending}
+      onSave={(draft) => create.mutate(draft)}
     />
   )
 }

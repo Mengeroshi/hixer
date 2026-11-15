@@ -1,5 +1,7 @@
-import { CreatedMixDetail, MixDetail } from "~/app/_components/mix-detail"
-import { getRecipeBySlug } from "~/data/afterglow"
+import { notFound } from "next/navigation"
+
+import { MixDetail } from "~/app/_components/mix-detail"
+import { api } from "~/trpc/server"
 
 type MixPageProps = {
   params: Promise<{ slug: string }>
@@ -7,26 +9,9 @@ type MixPageProps = {
 
 export default async function MixPage({ params }: MixPageProps) {
   const { slug } = await params
-  const recipe = getRecipeBySlug(slug)
+  const mix = await api.mix.bySlug({ slug })
 
-  if (
-    !recipe?.slug ||
-    !recipe.description ||
-    !recipe.ingredients ||
-    recipe.available === undefined
-  ) {
-    return <CreatedMixDetail slug={slug} />
-  }
+  if (!mix) notFound()
 
-  return (
-    <MixDetail
-      recipe={{
-        ...recipe,
-        slug: recipe.slug,
-        description: recipe.description,
-        ingredients: recipe.ingredients,
-        available: recipe.available,
-      }}
-    />
-  )
+  return <MixDetail mix={mix} />
 }
