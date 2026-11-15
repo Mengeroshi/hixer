@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useSyncExternalStore } from "react"
 import {
   Bookmark,
   House,
@@ -13,12 +14,9 @@ import {
 
 import { Button } from "~/components/ui/button"
 import { recipes, shop } from "~/data/afterglow"
+import { readCreatedMixes, subscribeCreatedMixes } from "~/lib/created-mixes"
 
-const stats = [
-  { label: "Mixes", value: String(recipes.length) },
-  { label: "Followers", value: shop.followers },
-  { label: "Following", value: String(shop.following) },
-] as const
+const noCreatedMixes: ReturnType<typeof readCreatedMixes> = []
 
 const tabs = [
   { label: "Mixes", icon: LayoutGrid, current: true },
@@ -34,6 +32,17 @@ const nav = [
 ] as const
 
 export function StoreProfile() {
+  const created = useSyncExternalStore(
+    subscribeCreatedMixes,
+    readCreatedMixes,
+    () => noCreatedMixes,
+  )
+  const stats = [
+    { label: "Mixes", value: String(recipes.length + created.length) },
+    { label: "Followers", value: shop.followers },
+    { label: "Following", value: String(shop.following) },
+  ]
+
   return (
     <div className="min-h-dvh bg-neutral-200 text-foreground">
       <div className="mx-auto flex h-dvh w-full max-w-[430px] flex-col bg-background">
@@ -111,6 +120,17 @@ export function StoreProfile() {
           </div>
 
           <ul className="mt-3 grid grid-cols-3 gap-1 overflow-hidden rounded-2xl border-2 border-border bg-surface-5 shadow-shadow">
+            {created.toReversed().map((mix) => (
+              <li key={mix.slug}>
+                <Link href={`/mixes/${mix.slug}`} className="block">
+                  <figure className="grid aspect-square place-items-center bg-surface-5 p-2">
+                    <figcaption className="text-center text-xs font-heading">
+                      {mix.name}
+                    </figcaption>
+                  </figure>
+                </Link>
+              </li>
+            ))}
             {recipes.map((recipe) => {
               const tile = (
                 <figure className="relative aspect-square overflow-hidden">
@@ -150,13 +170,13 @@ export function StoreProfile() {
         </div>
 
         <div className="mx-4 mb-4 flex flex-col items-end gap-3">
-          <button
-            type="button"
+          <Link
+            href="/mixes/new"
             aria-label="New"
             className="grid size-12 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
           >
             <Plus className="size-5" />
-          </button>
+          </Link>
           <nav className="grid w-full shrink-0 grid-cols-4 rounded-full border-2 border-border bg-foreground">
           {nav.map((item) => {
             const Icon = item.icon

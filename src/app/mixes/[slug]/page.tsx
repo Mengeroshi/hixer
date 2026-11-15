@@ -1,6 +1,4 @@
-import { notFound } from "next/navigation"
-
-import { MixDetail } from "~/app/_components/mix-detail"
+import { CreatedMixDetail, MixDetail } from "~/app/_components/mix-detail"
 import { getRecipeBySlug } from "~/data/afterglow"
 
 type MixPageProps = {
@@ -17,7 +15,7 @@ export default async function MixPage({ params }: MixPageProps) {
     !recipe.ingredients ||
     recipe.available === undefined
   ) {
-    notFound()
+    return <CreatedMixDetail slug={slug} />
   }
 
   return (
