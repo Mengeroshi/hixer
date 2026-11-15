@@ -11,7 +11,12 @@ const authErrors: Record<string, string> = {
 }
 
 function safeCallbackUrl(value: string | undefined) {
-  if (value?.startsWith("/") && !value.startsWith("//")) {
+  if (
+    value?.startsWith("/") &&
+    !value.startsWith("//") &&
+    !value.startsWith("/login") &&
+    !value.startsWith("/api/auth")
+  ) {
     return value
   }
   return "/profile"

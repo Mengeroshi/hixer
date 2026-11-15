@@ -6,12 +6,31 @@ import { getToken } from "next-auth/jwt"
 export const runtime = "nodejs"
 
 function isPublicPath(pathname: string) {
-  return (
+  if (
+    pathname === "/" ||
     pathname === "/login" ||
+    pathname.startsWith("/stores/") ||
+    pathname.startsWith("/payment/") ||
     pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
     pathname === "/favicon.ico"
-  )
+  ) {
+    return true
+  }
+
+  // Public mix pages; create/edit stay protected
+  if (pathname.startsWith("/mixes/")) {
+    return pathname !== "/mixes/new" && !/^\/mixes\/[^/]+\/edit$/.test(pathname)
+  }
+
+  return false
+}
+
+function safeCallbackPath(pathname: string) {
+  if (pathname.startsWith("/login") || pathname.startsWith("/api/auth")) {
+    return "/profile"
+  }
+  return pathname
 }
 
 export async function middleware(request: NextRequest) {
@@ -28,10 +47,7 @@ export async function middleware(request: NextRequest) {
 
   if (!token) {
     const login = new URL("/login", request.url)
-    login.searchParams.set(
-      "callbackUrl",
-      pathname === "/" ? "/profile" : pathname,
-    )
+    login.searchParams.set("callbackUrl", safeCallbackPath(pathname))
     return NextResponse.redirect(login)
   }
 
