@@ -7,7 +7,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
   title: "Hixy",
-  description: "Afterglow, an ice cream and smoothie counter on Hixy.",
+  description: "Hixy is where stores share mixes. Afterglow is one of them.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
