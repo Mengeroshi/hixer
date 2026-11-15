@@ -157,6 +157,7 @@ async function seedStore(entry: (typeof stores)[number]) {
       house: recipe.house ?? false,
       position,
       storeId: store.id,
+      authorId: owner.id,
     }
 
     await db.mix.upsert({
@@ -168,18 +169,182 @@ async function seedStore(entry: (typeof stores)[number]) {
 
   return {
     store: entry.name,
+    storeId: store.id,
     email: entry.email,
     password: entry.password,
   }
 }
 
-async function main() {
+const customers = [
+  {
+    slug: "mina",
+    email: "mina@hixy.local",
+    password: "mina12345",
+    name: "Mina",
+    handle: "@mina",
+    bio: "Home mixes and weekend floats.",
+  },
+  {
+    slug: "joel",
+    email: "joel@hixy.local",
+    password: "joel12345",
+    name: "Joel",
+    handle: "@joel",
+    bio: "Coffee first, then soft serve.",
+  },
+  {
+    slug: "rio",
+    email: "rio@hixy.local",
+    password: "rio12345",
+    name: "Rio",
+    handle: "@rio",
+    bio: "Trying every cone in town.",
+  },
+] as const
+
+async function seedCustomer(entry: (typeof customers)[number]) {
+  const passwordHash = await hash(entry.password, 10)
+
+  const owner = await db.user.upsert({
+    where: { email: entry.email },
+    update: {
+      name: entry.name,
+      passwordHash,
+      isStore: false,
+    },
+    create: {
+      email: entry.email,
+      name: entry.name,
+      passwordHash,
+      isStore: false,
+    },
+  })
+
+  await db.store.upsert({
+    where: { slug: entry.slug },
+    update: {
+      name: entry.name,
+      handle: entry.handle,
+      bio: entry.bio,
+      followers: "0",
+      following: 0,
+      ownerId: owner.id,
+    },
+    create: {
+      slug: entry.slug,
+      name: entry.name,
+      handle: entry.handle,
+      bio: entry.bio,
+      followers: "0",
+      following: 0,
+      ownerId: owner.id,
+    },
+  })
+
+  return {
+    id: owner.id,
+    name: entry.name,
+    email: entry.email,
+    password: entry.password,
+  }
+}
+
+const guestMixes = [
+  {
+    slug: "mina-lavender-cream-float",
+    name: "Lavender cream float",
+    kind: "Float",
+    price: "$6.25",
+    image: "",
+    description: "Lavender soda over vanilla soft serve, finished with cream.",
+    ingredients: ["Lavender soda", "Vanilla soft serve", "Cream"],
+    preparation: ["Scoop soft serve", "Pour lavender soda", "Float cream"],
+    tags: ["Float", "Lavender"],
+    available: true,
+    house: false,
+  },
+  {
+    slug: "mina-honey-cardamom-shake",
+    name: "Honey cardamom shake",
+    kind: "Shake",
+    price: "$6.75",
+    image: "",
+    description: "Soft serve blended with honey and warm cardamom.",
+    ingredients: ["Vanilla soft serve", "Honey", "Cardamom", "Milk"],
+    preparation: ["Blend soft serve and milk", "Add honey and cardamom", "Serve cold"],
+    tags: ["Shake", "Honey"],
+    available: true,
+    house: false,
+  },
+] as const
+
+async function seedGuestMixes(authorId: string, storeId: string) {
+  const lowest = await db.mix.aggregate({
+    where: { storeId },
+    _min: { position: true },
+  })
+  let position =
+    lowest._min.position == null ? -1 : lowest._min.position - 1
+
   const created = []
-  for (const entry of stores) {
-    created.push(await seedStore(entry))
+  for (const mix of guestMixes) {
+    const data = {
+      name: mix.name,
+      kind: mix.kind,
+      price: mix.price,
+      image: mix.image,
+      description: mix.description,
+      ingredients: [...mix.ingredients],
+      preparation: [...mix.preparation],
+      tags: [...mix.tags],
+      available: mix.available,
+      house: mix.house,
+      position,
+      storeId,
+      authorId,
+    }
+    position -= 1
+
+    await db.mix.upsert({
+      where: { slug: mix.slug },
+      update: data,
+      create: { slug: mix.slug, ...data },
+    })
+    created.push({ slug: mix.slug, name: mix.name })
   }
 
-  console.log(JSON.stringify(created, null, 2))
+  return created
+}
+
+async function main() {
+  const createdStores = []
+  for (const entry of stores) {
+    createdStores.push(await seedStore(entry))
+  }
+
+  const createdCustomers = []
+  for (const entry of customers) {
+    createdCustomers.push(await seedCustomer(entry))
+  }
+
+  const afterglow = createdStores.find((store) => store.store === "Afterglow")
+  const mina = createdCustomers.find((customer) => customer.name === "Mina")
+  const guestAuthored =
+    afterglow && mina
+      ? await seedGuestMixes(mina.id, afterglow.storeId)
+      : []
+
+  console.log(
+    JSON.stringify(
+      {
+        stores: createdStores,
+        customers: createdCustomers,
+        guestAuthored,
+      },
+      null,
+      2,
+    ),
+  )
 }
 
 main()

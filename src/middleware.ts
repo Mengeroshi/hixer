@@ -12,13 +12,6 @@ function isPublicPath(pathname: string) {
   )
 }
 
-function isStoreManagePath(pathname: string) {
-  if (pathname === "/mixes/new") {
-    return true
-  }
-  return /^\/mixes\/[^/]+\/edit$/.test(pathname)
-}
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -38,10 +31,6 @@ export async function middleware(request: NextRequest) {
       pathname === "/" ? "/profile" : pathname,
     )
     return NextResponse.redirect(login)
-  }
-
-  if (isStoreManagePath(pathname) && !token.isStore) {
-    return NextResponse.redirect(new URL("/profile", request.url))
   }
 
   return NextResponse.next()

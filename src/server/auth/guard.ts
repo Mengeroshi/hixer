@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 
 import { auth } from "~/server/auth"
 import { db } from "~/server/db"
+import { ensureOwnedStore } from "~/server/owned-store"
 
 function loginPath(callbackUrl: string) {
   return `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
@@ -19,18 +20,7 @@ export async function requireSession(callbackUrl: string) {
 
 export async function requireStoreOwner(callbackUrl: string) {
   const session = await requireSession(callbackUrl)
-
-  if (!session.user.isStore) {
-    redirect("/profile")
-  }
-
-  const store = await db.store.findUnique({
-    where: { ownerId: session.user.id },
-  })
-
-  if (!store) {
-    redirect("/profile")
-  }
+  const store = await ensureOwnedStore(session.user)
 
   return { session, store }
 }
@@ -41,14 +31,50 @@ export async function canManageStore(storeId: string | null | undefined) {
   }
 
   const session = await auth()
-  if (!session?.user?.isStore) {
+  if (!session?.user) {
     return false
   }
 
   const store = await db.store.findUnique({
-    where: { ownerId: session.user.id },
-    select: { id: true },
+    where: { id: storeId },
+    select: { ownerId: true },
   })
 
-  return store?.id === storeId
+  return store?.ownerId === session.user.id
+}
+
+export async function canManageMix(mix: {
+  authorId: string | null
+  storeId: string | null
+}) {
+  const session = await auth()
+  if (!session?.user) {
+    return false
+  }
+
+  if (mix.authorId === session.user.id) {
+    return true
+  }
+
+  return canManageStore(mix.storeId)
+}
+
+export async function requireMixEditor(slug: string, callbackUrl: string) {
+  const session = await requireSession(callbackUrl)
+  const mix = await db.mix.findUnique({
+    where: { slug },
+    include: { store: { select: { ownerId: true } } },
+  })
+
+  if (!mix) {
+    return { session, mix: null as null }
+  }
+
+  const isAuthor = mix.authorId === session.user.id
+  const isStoreOwner = mix.store.ownerId === session.user.id
+  if (!isAuthor && !isStoreOwner) {
+    redirect("/profile")
+  }
+
+  return { session, mix }
 }

@@ -37,6 +37,11 @@ const emptyDraft: MixDraft = {
   available: true,
 }
 
+type ShopOption = {
+  slug: string
+  name: string
+}
+
 type MixFormProps = {
   title: string
   backHref: string
@@ -44,7 +49,8 @@ type MixFormProps = {
   image?: string
   initial: MixDraft
   saving?: boolean
-  onSave: (draft: MixDraft) => void
+  shops?: ShopOption[]
+  onSave: (draft: MixDraft & { storeSlug?: string }) => void
 }
 
 function MixForm({
@@ -54,9 +60,11 @@ function MixForm({
   image,
   initial,
   saving = false,
+  shops,
   onSave,
 }: MixFormProps) {
   const [draft, setDraft] = useState(initial)
+  const [storeSlug, setStoreSlug] = useState(shops?.[0]?.slug ?? "")
 
   function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -74,7 +82,11 @@ function MixForm({
       return
     }
 
-    onSave(next)
+    if (shops && shops.length > 0 && !storeSlug) {
+      return
+    }
+
+    onSave(shops ? { ...next, storeSlug } : next)
   }
 
   return (
@@ -112,6 +124,24 @@ function MixForm({
                 className="pointer-events-none absolute inset-0 bg-[#ecd3f5]/25 mix-blend-soft-light"
               />
             </figure>
+
+            {shops && shops.length > 0 ? (
+              <label className="mt-4 block">
+                <span className="mb-1 block text-xs font-heading">Store</span>
+                <select
+                  required
+                  value={storeSlug}
+                  onChange={(event) => setStoreSlug(event.target.value)}
+                  className="h-12 w-full rounded-xl border-2 border-border bg-background px-3 text-sm font-heading"
+                >
+                  {shops.map((shop) => (
+                    <option key={shop.slug} value={shop.slug}>
+                      {shop.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
 
             <label className="mt-4 block">
               <span className="sr-only">Name</span>
@@ -373,7 +403,13 @@ export function MixEdit({ mix }: { mix: MixDetailData }) {
   )
 }
 
-export function MixCreate() {
+export function MixCreate({
+  isStore,
+  shops = [],
+}: {
+  isStore: boolean
+  shops?: ShopOption[]
+}) {
   const router = useRouter()
   const create = api.mix.create.useMutation({
     onSuccess: (mix) => router.push(`/mixes/${mix.slug}`),
@@ -386,6 +422,7 @@ export function MixCreate() {
       backLabel="Back to profile"
       initial={emptyDraft}
       saving={create.isPending}
+      shops={isStore ? undefined : shops}
       onSave={(draft) => create.mutate(draft)}
     />
   )

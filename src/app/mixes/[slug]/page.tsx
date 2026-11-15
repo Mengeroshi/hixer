@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
 import { MixDetail } from "~/app/_components/mix-detail"
-import { canManageStore } from "~/server/auth/guard"
+import { canManageMix } from "~/server/auth/guard"
 import { api } from "~/trpc/server"
 
 type MixPageProps = {
@@ -14,7 +14,7 @@ export default async function MixPage({ params }: MixPageProps) {
 
   if (!mix) notFound()
 
-  const canEdit = await canManageStore(mix.storeId)
+  const canEdit = await canManageMix(mix)
 
   return <MixDetail mix={mix} canEdit={canEdit} />
 }

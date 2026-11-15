@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation"
 
 import { StoreProfile } from "~/app/_components/store-profile"
 import { auth } from "~/server/auth"
+import { ensureOwnedStore } from "~/server/owned-store"
 import { api } from "~/trpc/server"
 
 export default async function ProfilePage() {
@@ -10,20 +11,18 @@ export default async function ProfilePage() {
     redirect("/login?callbackUrl=/profile")
   }
 
-  const mine = session.user.isStore ? await api.store.mine() : null
-  if (!mine) {
-    notFound()
-  }
-
+  const mine = await ensureOwnedStore(session.user)
   const store = await api.store.bySlug({ slug: mine.slug })
   if (!store) {
     notFound()
   }
 
+  const mixes = await api.mix.mine()
+
   return (
     <StoreProfile
       store={store}
-      mixes={store.mixes}
+      mixes={mixes}
       user={session.user}
     />
   )
