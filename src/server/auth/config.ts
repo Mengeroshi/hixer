@@ -77,27 +77,11 @@ export const authConfig = {
     signIn: "/login",
   },
   callbacks: {
-    jwt: async ({ token, user }) => {
+    jwt: ({ token, user }) => {
       if (user) {
         token.sub = user.id;
         token.isStore = Boolean(user.isStore);
-        return token;
       }
-
-      // JWT can outlive a DB reset/seed; drop it so we don't FK-fail on Store.ownerId
-      if (!token.sub) {
-        return token;
-      }
-
-      const dbUser = await db.user.findUnique({
-        where: { id: token.sub },
-        select: { isStore: true },
-      });
-      if (!dbUser) {
-        return null;
-      }
-
-      token.isStore = dbUser.isStore;
       return token;
     },
     session: ({ session, token }) => ({

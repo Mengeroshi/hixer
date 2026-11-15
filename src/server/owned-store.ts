@@ -1,3 +1,4 @@
+import { signOut } from "~/server/auth"
 import { db } from "~/server/db"
 
 function slugify(value: string) {
@@ -43,8 +44,8 @@ export async function ensureOwnedStore(user: {
     select: { id: true },
   })
   if (!owner) {
-    // Stale session id — auth jwt callback should have cleared this first
-    throw new Error("Cannot create store: user no longer exists")
+    // Stale JWT after DB reset. Must clear cookie — login↔profile redirect loops otherwise
+    await signOut({ redirectTo: "/login" })
   }
 
   const label = profileLabel(user)
