@@ -6,11 +6,13 @@ import { z } from "zod";
 
 import { signIn, signOut } from "~/server/auth";
 import { db } from "~/server/db";
+import { ensureOwnedStore } from "~/server/owned-store";
 
 const emailAuthSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
   isStore: z.boolean(),
+  mode: z.enum(["signin", "signup"]),
 });
 
 export type AuthActionState = {
@@ -23,10 +25,12 @@ function formString(formData: FormData, key: string) {
 }
 
 function formValues(formData: FormData) {
+  const mode = formString(formData, "mode");
   return {
     email: formString(formData, "email"),
     password: formString(formData, "password"),
     isStore: formData.get("isStore") === "on",
+    mode: mode === "signup" ? "signup" : "signin",
   };
 }
 
@@ -38,7 +42,28 @@ function safeRedirectTo(formData: FormData) {
   return "/profile";
 }
 
-export async function registerWithEmail(
+async function signInCredentials(
+  email: string,
+  password: string,
+  redirectTo: string,
+) {
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo,
+    });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return { error: "Invalid email or password" } satisfies AuthActionState;
+    }
+    throw error;
+  }
+
+  return {};
+}
+
+export async function authenticateWithEmail(
   _prev: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
@@ -48,21 +73,28 @@ export async function registerWithEmail(
   }
 
   const email = parsed.data.email.toLowerCase();
+  const redirectTo = safeRedirectTo(formData);
+
+  if (parsed.data.mode === "signin") {
+    return signInCredentials(email, parsed.data.password, redirectTo);
+  }
+
   const existing = await db.user.findUnique({ where: { email } });
   if (existing) {
-    return { error: "An account with this email already exists" };
+    return {
+      error: "An account with this email already exists. Sign in instead.",
+    };
   }
 
   const passwordHash = await hash(parsed.data.password, 10);
-  await db.user.create({
+  const user = await db.user.create({
     data: {
       email,
       passwordHash,
       isStore: parsed.data.isStore,
     },
   });
-
-  const redirectTo = safeRedirectTo(formData);
+  await ensureOwnedStore(user);
 
   try {
     await signIn("credentials", {
@@ -80,33 +112,6 @@ export async function registerWithEmail(
   return {};
 }
 
-export async function signInWithEmail(
-  _prev: AuthActionState,
-  formData: FormData,
-): Promise<AuthActionState> {
-  const parsed = emailAuthSchema.safeParse(formValues(formData));
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid details" };
-  }
-
-  const redirectTo = safeRedirectTo(formData);
-
-  try {
-    await signIn("credentials", {
-      email: parsed.data.email.toLowerCase(),
-      password: parsed.data.password,
-      redirectTo,
-    });
-  } catch (error) {
-    if (error instanceof AuthError) {
-      return { error: "Invalid email or password" };
-    }
-    throw error;
-  }
-
-  return {};
-}
-
 export async function signOutAction() {
-  await signOut({ redirectTo: "/" });
+  await signOut({ redirectTo: "/login" });
 }

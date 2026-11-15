@@ -7,6 +7,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc"
+import { ensureOwnedStore } from "~/server/owned-store"
 
 const stringList = z.array(z.string())
 
@@ -34,20 +35,24 @@ function slugify(name: string) {
   return base || "mix"
 }
 
-function present(row: {
-  slug: string
-  name: string
-  kind: string
-  price: string
-  image: string
-  description: string
-  ingredients: Prisma.JsonValue
-  preparation: Prisma.JsonValue
-  tags: Prisma.JsonValue
-  available: boolean
-  house: boolean
-  storeId: string | null
-}) {
+function present(
+  row: {
+    slug: string
+    name: string
+    kind: string
+    price: string
+    image: string
+    description: string
+    ingredients: Prisma.JsonValue
+    preparation: Prisma.JsonValue
+    tags: Prisma.JsonValue
+    available: boolean
+    house: boolean
+    storeId: string | null
+    authorId: string | null
+  },
+  store?: { slug: string; name: string; handle: string } | null,
+) {
   return {
     slug: row.slug,
     name: row.name,
@@ -61,26 +66,37 @@ function present(row: {
     available: row.available,
     house: row.house,
     storeId: row.storeId,
+    authorId: row.authorId,
+    store: store
+      ? { slug: store.slug, name: store.name, handle: store.handle }
+      : null,
   }
 }
 
-async function requireOwnedStore(
-  db: {
-    store: {
-      findUnique: (args: {
-        where: { ownerId: string }
-      }) => Promise<{ id: string; slug: string } | null>
-    }
-  },
-  userId: string,
+async function resolveCreateStore(
+  user: { id: string; name?: string | null; email?: string | null; isStore: boolean },
+  storeSlug: string | undefined,
+  findShop: (slug: string) => Promise<{ id: string; isShop: boolean } | null>,
 ) {
-  const store = await db.store.findUnique({ where: { ownerId: userId } })
-  if (!store) {
+  if (user.isStore) {
+    return ensureOwnedStore(user)
+  }
+
+  if (!storeSlug) {
     throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Create a store before managing mixes",
+      code: "BAD_REQUEST",
+      message: "Pick a store for this mix",
     })
   }
+
+  const store = await findShop(storeSlug)
+  if (!store?.isShop) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Store not found",
+    })
+  }
+
   return store
 }
 
@@ -103,24 +119,54 @@ export const mixRouter = createTRPCRouter({
       })
     }),
 
+  mine: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.mix.findMany({
+      where: { authorId: ctx.session.user.id },
+      orderBy: { position: "asc" },
+      select: {
+        slug: true,
+        name: true,
+        image: true,
+        house: true,
+        description: true,
+      },
+    })
+  }),
+
   bySlug: publicProcedure
     .input(z.object({ slug: z.string() }))
     .query(async ({ ctx, input }) => {
-      const row = await ctx.db.mix.findUnique({ where: { slug: input.slug } })
-      return row ? present(row) : null
+      const row = await ctx.db.mix.findUnique({
+        where: { slug: input.slug },
+        include: {
+          store: {
+            select: { slug: true, name: true, handle: true },
+          },
+        },
+      })
+      return row ? present(row, row.store) : null
     }),
 
   create: protectedProcedure
-    .input(mixFields)
+    .input(mixFields.extend({ storeSlug: z.string().trim().min(1).optional() }))
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.session.user.isStore) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only store accounts can create mixes",
-        })
-      }
-
-      const store = await requireOwnedStore(ctx.db, ctx.session.user.id)
+      const store = await resolveCreateStore(
+        ctx.session.user,
+        input.storeSlug,
+        async (slug) => {
+          const row = await ctx.db.store.findUnique({
+            where: { slug },
+            select: {
+              id: true,
+              owner: { select: { isStore: true } },
+            },
+          })
+          if (!row) {
+            return null
+          }
+          return { id: row.id, isShop: Boolean(row.owner?.isStore) }
+        },
+      )
 
       const existing = await ctx.db.mix.findMany({ select: { slug: true } })
       const taken = new Set(existing.map((mix) => mix.slug))
@@ -153,6 +199,7 @@ export const mixRouter = createTRPCRouter({
           available: input.available,
           position,
           storeId: store.id,
+          authorId: ctx.session.user.id,
         },
       })
 
@@ -162,19 +209,18 @@ export const mixRouter = createTRPCRouter({
   update: protectedProcedure
     .input(mixFields.extend({ slug: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.session.user.isStore) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only store accounts can edit mixes",
-        })
-      }
-
-      const store = await requireOwnedStore(ctx.db, ctx.session.user.id)
       const existing = await ctx.db.mix.findUnique({
         where: { slug: input.slug },
+        include: { store: { select: { ownerId: true } } },
       })
-      if (!existing || existing.storeId !== store.id) {
+      if (!existing) {
         throw new TRPCError({ code: "NOT_FOUND" })
+      }
+
+      const isAuthor = existing.authorId === ctx.session.user.id
+      const isStoreOwner = existing.store.ownerId === ctx.session.user.id
+      if (!isAuthor && !isStoreOwner) {
+        throw new TRPCError({ code: "FORBIDDEN" })
       }
 
       const row = await ctx.db.mix.update({

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowLeft, Pencil } from "lucide-react"
+import { ArrowLeft, Pencil, Store } from "lucide-react"
 
 export type MixDetailData = {
   slug: string
@@ -12,6 +12,11 @@ export type MixDetailData = {
   preparation: string[]
   tags: string[]
   available: boolean
+  store?: {
+    slug: string
+    name: string
+    handle: string
+  } | null
 }
 
 export function MixDetail({
@@ -77,6 +82,25 @@ export function MixDetail({
               {mix.available ? "Available" : "Sold out"}
             </span>
           </div>
+
+          {mix.store ? (
+            <Link
+              href={`/stores/${mix.store.slug}`}
+              className="mt-3 flex items-center gap-2 rounded-xl border-2 border-border bg-surface-5 px-3 py-2 shadow-shadow"
+            >
+              <span className="grid size-9 place-items-center rounded-full border-2 border-border bg-main">
+                <Store className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-heading">
+                  {mix.store.name}
+                </span>
+                <span className="block truncate text-xs text-foreground/70">
+                  {mix.store.handle}
+                </span>
+              </span>
+            </Link>
+          ) : null}
 
           <p className="mt-3 text-sm">{mix.description}</p>
 

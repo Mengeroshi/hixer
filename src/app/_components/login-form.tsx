@@ -6,8 +6,7 @@ import { useActionState, useState } from "react"
 import { Button } from "~/components/ui/button"
 import {
   type AuthActionState,
-  registerWithEmail,
-  signInWithEmail,
+  authenticateWithEmail,
 } from "~/server/auth/actions"
 
 const initialState: AuthActionState = {}
@@ -21,14 +20,17 @@ export function LoginForm({
 }) {
   const [mode, setMode] = useState<"signin" | "signup">("signin")
   const [isStore, setIsStore] = useState(false)
-  const action = mode === "signin" ? signInWithEmail : registerWithEmail
-  const [state, formAction, pending] = useActionState(action, initialState)
+  const [state, formAction, pending] = useActionState(
+    authenticateWithEmail,
+    initialState,
+  )
   const error = state.error ?? authError
 
   return (
     <div className="flex flex-1 flex-col gap-5">
       <form action={formAction} className="flex flex-col gap-3">
         <input type="hidden" name="callbackUrl" value={callbackUrl} />
+        <input type="hidden" name="mode" value={mode} />
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-heading">Email</span>
           <input
@@ -101,7 +103,10 @@ export function LoginForm({
             <button
               type="button"
               className="font-heading underline underline-offset-2"
-              onClick={() => setMode("signup")}
+              onClick={() => {
+                setIsStore(false)
+                setMode("signup")
+              }}
             >
               Create one
             </button>

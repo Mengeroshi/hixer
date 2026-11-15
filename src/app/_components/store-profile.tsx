@@ -64,6 +64,12 @@ export function StoreProfile({
   user: ProfileUser | null
 }) {
   const canManage = Boolean(user && store.ownerId === user.id)
+  const initials =
+    store.name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("") || "?"
   const stats = [
     { label: "Mixes", value: String(mixes.length) },
     { label: "Followers", value: store.followers },
@@ -102,7 +108,7 @@ export function StoreProfile({
 
           <section className="flex items-center gap-4">
             <div className="grid size-20 shrink-0 place-items-center rounded-full border-2 border-border bg-main text-xl font-heading">
-              AG
+              {initials}
             </div>
             <dl className="grid flex-1 grid-cols-3 text-center">
               {stats.map((stat) => (
@@ -120,13 +126,15 @@ export function StoreProfile({
           </div>
 
           <div className="mt-4 flex gap-2">
-            <Button
-              type="button"
-              variant="noShadow"
-              className="h-11 flex-1 rounded-xl bg-surface-2 text-foreground"
-            >
-              Edit profile
-            </Button>
+            {canManage ? (
+              <Button
+                type="button"
+                variant="noShadow"
+                className="h-11 flex-1 rounded-xl bg-surface-2 text-foreground"
+              >
+                Edit profile
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="noShadow"

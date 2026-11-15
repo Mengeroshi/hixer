@@ -54,6 +54,14 @@ export const storeRouter = createTRPCRouter({
     return rows.map(presentStore)
   }),
 
+  listShops: publicProcedure.query(async ({ ctx }) => {
+    const rows = await ctx.db.store.findMany({
+      where: { owner: { isStore: true } },
+      orderBy: { name: "asc" },
+    })
+    return rows.map(presentStore)
+  }),
+
   bySlug: publicProcedure
     .input(z.object({ slug: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
@@ -93,13 +101,6 @@ export const storeRouter = createTRPCRouter({
   create: protectedProcedure
     .input(storeFields)
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.session.user.isStore) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only store accounts can create a store",
-        })
-      }
-
       const existing = await ctx.db.store.findUnique({
         where: { ownerId: ctx.session.user.id },
       })
