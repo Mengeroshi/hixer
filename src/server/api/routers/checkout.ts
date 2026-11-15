@@ -358,6 +358,29 @@ export const checkoutRouter = createTRPCRouter({
       }
     }),
 
+  myOrders: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.order.findMany({
+      where: { userId: ctx.session.user.id },
+      orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
+      select: {
+        id: true,
+        peyTransactionId: true,
+        status: true,
+        amount: true,
+        currency: true,
+        paymentMethod: true,
+        description: true,
+        numRef: true,
+        items: true,
+        storeSlug: true,
+        storeName: true,
+        storeHandle: true,
+        paidAt: true,
+        createdAt: true,
+      },
+    })
+  }),
+
   getOrderByTransaction: protectedProcedure
     .input(z.object({ peyTransactionId: z.string().trim().min(1) }))
     .query(async ({ ctx, input }) => {
