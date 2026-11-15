@@ -1,0 +1,16 @@
+---
+description: Use pnpm for every package-manager command
+alwaysApply: true
+---
+
+# Package manager
+
+Run package commands with pnpm. Do not use npm or yarn.
+
+```bash
+pnpm install
+pnpm add <pkg>
+pnpm exec --no -- <cmd>
+pnpm dev
+pnpm run check
+```
