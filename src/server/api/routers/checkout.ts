@@ -6,7 +6,6 @@ import {
   createPendingOrder,
   parsePeyTransaction,
   upsertOrderFromPeyTransaction,
-  type OrderCartItem,
 } from "~/server/orders"
 import {
   createCodiPush,
@@ -112,7 +111,7 @@ function numRefFromDescription(description?: string | null) {
   if (!description) {
     return null
   }
-  const match = description.match(/(\d{1,7})\s*$/)
+  const match = /(\d{1,7})\s*$/.exec(description)
   return match?.[1] ?? null
 }
 
@@ -319,7 +318,7 @@ export const checkoutRouter = createTRPCRouter({
             },
             transaction,
             raw: result.raw,
-            items: input.items as OrderCartItem[] | undefined,
+            items: input.items,
             numRef: numRefFromDescription(transaction.description),
           })
         } else if (transaction) {
@@ -337,7 +336,7 @@ export const checkoutRouter = createTRPCRouter({
               },
               transaction,
               raw: result.raw,
-              items: input.items as OrderCartItem[] | undefined,
+              items: input.items,
               numRef: existing.numRef,
             })
           }

@@ -180,7 +180,7 @@ export function setStoreCartItemQuantity(
 }
 
 export function parsePrice(price: string): number {
-  const match = price.replace(/,/g, "").match(/(\d+(?:\.\d+)?)/)
+  const match = /(\d+(?:\.\d+)?)/.exec(price.replace(/,/g, ""))
   return match ? Number(match[1]) : 0
 }
 

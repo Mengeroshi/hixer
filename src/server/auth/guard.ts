@@ -67,7 +67,7 @@ export async function requireMixEditor(slug: string, callbackUrl: string) {
   })
 
   if (!mix) {
-    return { session, mix: null as null }
+    return { session, mix: null }
   }
 
   const isAuthor = mix.authorId === session.user.id

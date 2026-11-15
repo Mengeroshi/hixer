@@ -15,6 +15,8 @@ export const ourFileRouter = {
     .middleware(async () => {
       const session = await auth()
       if (!session?.user?.id) {
+        // UploadThingError is the SDK's auth failure signal.
+        // eslint-disable-next-line @typescript-eslint/only-throw-error -- UploadThingError
         throw new UploadThingError("Unauthorized")
       }
       return { userId: session.user.id }

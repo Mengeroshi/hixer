@@ -107,7 +107,7 @@ export function StoreProfile({
   user: ProfileUser | null
 }) {
   const [tab, setTab] = useState<ProfileTab>("mixes")
-  const canManage = Boolean(user && store.ownerId === user.id)
+  const canManage = Boolean(user?.id && store.ownerId === user.id)
   const ordersQuery = api.checkout.myOrders.useQuery(undefined, {
     enabled: Boolean(user) && tab === "orders",
   })
@@ -296,9 +296,7 @@ export function StoreProfile({
                 </div>
               ) : null}
 
-              {user &&
-              ordersQuery.data &&
-              ordersQuery.data.length === 0 ? (
+              {user && ordersQuery.data?.length === 0 ? (
                 <div className="rounded-2xl border-2 border-border bg-surface-5 p-6 text-center shadow-shadow">
                   <p className="font-heading">No orders yet</p>
                 </div>

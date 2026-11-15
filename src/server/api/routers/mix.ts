@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 
-import { Prisma } from "../../../../generated/prisma"
+import type { Prisma } from "../../../../generated/prisma"
 import {
   createTRPCRouter,
   protectedProcedure,
