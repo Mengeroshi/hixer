@@ -27,7 +27,7 @@ export function MixDetail({
         <div className="flex-1 overflow-y-auto px-4 pb-24">
           <header className="flex items-center gap-3 py-4">
             <Link
-              href="/"
+              href="/profile"
               aria-label="Back to profile"
               className="grid size-10 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
             >

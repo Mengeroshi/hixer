@@ -14,7 +14,7 @@ function safeCallbackUrl(value: string | undefined) {
   if (value?.startsWith("/") && !value.startsWith("//")) {
     return value
   }
-  return "/"
+  return "/profile"
 }
 
 export default async function LoginPage({

@@ -382,7 +382,7 @@ export function MixCreate() {
   return (
     <MixForm
       title="New mix"
-      backHref="/"
+      backHref="/profile"
       backLabel="Back to profile"
       initial={emptyDraft}
       saving={create.isPending}
