@@ -21,7 +21,7 @@ export async function requireStoreOwner(callbackUrl: string) {
   const session = await requireSession(callbackUrl)
 
   if (!session.user.isStore) {
-    redirect("/")
+    redirect("/profile")
   }
 
   const store = await db.store.findUnique({
@@ -29,7 +29,7 @@ export async function requireStoreOwner(callbackUrl: string) {
   })
 
   if (!store) {
-    redirect("/")
+    redirect("/profile")
   }
 
   return { session, store }

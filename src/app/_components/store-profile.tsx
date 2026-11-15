@@ -48,10 +48,10 @@ const tabs = [
 ] as const
 
 const nav = [
-  { label: "Home", icon: House, tone: "text-surface-1" },
+  { label: "Home", icon: House, tone: "text-surface-1", href: "/" },
   { label: "Search", icon: Search, tone: "text-surface-3" },
   { label: "Add", icon: Plus, tone: "text-surface-2" },
-  { label: "Profile", icon: UserRound, current: true },
+  { label: "Profile", icon: UserRound, current: true, href: "/profile" },
 ] as const
 
 export function StoreProfile({
@@ -217,13 +217,9 @@ export function StoreProfile({
           {nav.map((item) => {
             const Icon = item.icon
             const current = "current" in item
-            return (
-              <button
-                key={item.label}
-                type="button"
-                aria-current={current ? "page" : undefined}
-                className="grid h-14 place-items-center"
-              >
+            const className = "grid h-14 place-items-center"
+            const content = (
+              <>
                 {current ? (
                   <span className="grid size-10 place-items-center rounded-full bg-surface-5 text-foreground">
                     <Icon className="size-5" />
@@ -232,6 +228,30 @@ export function StoreProfile({
                   <Icon className={`size-6 stroke-[2.5] ${"tone" in item ? item.tone : ""}`} />
                 )}
                 <span className="sr-only">{item.label}</span>
+              </>
+            )
+
+            if ("href" in item && item.href) {
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  aria-current={current ? "page" : undefined}
+                  className={className}
+                >
+                  {content}
+                </Link>
+              )
+            }
+
+            return (
+              <button
+                key={item.label}
+                type="button"
+                aria-current={current ? "page" : undefined}
+                className={className}
+              >
+                {content}
               </button>
             )
           })}

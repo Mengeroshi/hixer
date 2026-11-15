@@ -33,12 +33,15 @@ export async function middleware(request: NextRequest) {
 
   if (!token) {
     const login = new URL("/login", request.url)
-    login.searchParams.set("callbackUrl", pathname)
+    login.searchParams.set(
+      "callbackUrl",
+      pathname === "/" ? "/profile" : pathname,
+    )
     return NextResponse.redirect(login)
   }
 
   if (isStoreManagePath(pathname) && !token.isStore) {
-    return NextResponse.redirect(new URL("/", request.url))
+    return NextResponse.redirect(new URL("/profile", request.url))
   }
 
   return NextResponse.next()

@@ -35,7 +35,7 @@ function safeRedirectTo(formData: FormData) {
   if (value.startsWith("/") && !value.startsWith("//")) {
     return value;
   }
-  return "/";
+  return "/profile";
 }
 
 export async function registerWithEmail(

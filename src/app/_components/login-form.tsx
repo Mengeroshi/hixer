@@ -14,7 +14,7 @@ const initialState: AuthActionState = {}
 
 export function LoginForm({
   authError,
-  callbackUrl = "/",
+  callbackUrl = "/profile",
 }: {
   authError?: string
   callbackUrl?: string
