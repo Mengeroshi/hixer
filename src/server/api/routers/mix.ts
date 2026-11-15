@@ -15,6 +15,7 @@ const mixFields = z.object({
   name: z.string().trim().min(1),
   price: z.string().trim().min(1),
   description: z.string().trim().min(1),
+  image: z.string().trim().url().or(z.literal("")).optional(),
   ingredients: z.array(z.string().trim().min(1)).min(1),
   preparation: z.array(z.string().trim().min(1)),
   tags: z.array(z.string().trim().min(1)),
@@ -227,6 +228,7 @@ export const mixRouter = createTRPCRouter({
           name: input.name,
           kind: "Mix",
           price: input.price,
+          image: input.image ?? "",
           description: input.description,
           ingredients: input.ingredients,
           preparation: input.preparation,
@@ -263,6 +265,7 @@ export const mixRouter = createTRPCRouter({
         data: {
           name: input.name,
           price: input.price,
+          image: input.image ?? existing.image,
           description: input.description,
           ingredients: input.ingredients,
           preparation: input.preparation,

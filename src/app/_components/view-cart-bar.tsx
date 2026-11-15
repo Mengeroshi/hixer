@@ -44,11 +44,15 @@ export function ViewCartBar() {
   }
 
   const cartPath = `/stores/${cart.storeSlug}/cart`
+  const onForm =
+    pathname === "/mixes/new" ||
+    /^\/mixes\/[^/]+\/edit$/.test(pathname)
   if (
     pathname === cartPath ||
-    pathname.startsWith("/stores/") && pathname.endsWith("/cart") ||
+    (pathname.startsWith("/stores/") && pathname.endsWith("/cart")) ||
     pathname === "/login" ||
-    pathname.startsWith("/payment/")
+    pathname.startsWith("/payment/") ||
+    onForm
   ) {
     return null
   }

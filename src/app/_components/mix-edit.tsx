@@ -2,17 +2,19 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState, type FormEvent } from "react"
-import { ArrowLeft, Plus, X } from "lucide-react"
+import { useRef, useState, type FormEvent } from "react"
+import { ArrowLeft, ImagePlus, Plus, X } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
 import type { MixDetailData } from "~/app/_components/mix-detail"
 import { api } from "~/trpc/react"
+import { useUploadThing } from "~/utils/uploadthing"
 
 type MixDraft = {
   name: string
   price: string
   description: string
+  image: string
   ingredients: string[]
   preparation: string[]
   tags: string[]
@@ -31,6 +33,7 @@ const emptyDraft: MixDraft = {
   name: "",
   price: "",
   description: "",
+  image: "",
   ingredients: [],
   preparation: [],
   tags: [],
@@ -46,7 +49,6 @@ type MixFormProps = {
   title: string
   backHref: string
   backLabel: string
-  image?: string
   initial: MixDraft
   saving?: boolean
   shops?: ShopOption[]
@@ -57,7 +59,6 @@ function MixForm({
   title,
   backHref,
   backLabel,
-  image,
   initial,
   saving = false,
   shops,
@@ -65,6 +66,23 @@ function MixForm({
 }: MixFormProps) {
   const [draft, setDraft] = useState(initial)
   const [storeSlug, setStoreSlug] = useState(shops?.[0]?.slug ?? "")
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const { startUpload, isUploading } = useUploadThing("mixImage", {
+    onClientUploadComplete: (files) => {
+      const url = files[0]?.ufsUrl ?? files[0]?.url
+      if (!url) {
+        setUploadError("Upload finished without a URL")
+        return
+      }
+      setUploadError(null)
+      setDraft((current) => ({ ...current, image: url }))
+    },
+    onUploadError: (error) => {
+      setUploadError(error.message)
+    },
+  })
 
   function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -72,6 +90,7 @@ function MixForm({
       name: draft.name.trim(),
       price: draft.price.trim(),
       description: draft.description.trim(),
+      image: draft.image.trim(),
       ingredients: draft.ingredients.map((item) => item.trim()).filter(Boolean),
       preparation: draft.preparation.map((item) => item.trim()).filter(Boolean),
       tags: draft.tags.map((item) => item.trim()).filter(Boolean),
@@ -106,14 +125,21 @@ function MixForm({
             </header>
 
             <figure className="relative overflow-hidden rounded-2xl border-2 border-border shadow-shadow">
-              {image ? (
+              {draft.image ? (
                 <img
-                  src={image}
+                  src={draft.image}
                   alt={draft.name || title}
                   className="aspect-square w-full object-cover grayscale-[0.4] sepia-[0.35] saturate-50 contrast-95"
                 />
               ) : (
-                <div className="aspect-square bg-surface-5" />
+                <div className="grid aspect-square place-items-center bg-surface-5 p-6">
+                  <div className="text-center">
+                    <ImagePlus className="mx-auto size-8 text-foreground/40" />
+                    <p className="mt-3 text-sm font-heading text-foreground/70">
+                      {isUploading ? "Uploading…" : "Add a photo"}
+                    </p>
+                  </div>
+                </div>
               )}
               <span
                 aria-hidden
@@ -123,7 +149,53 @@ function MixForm({
                 aria-hidden
                 className="pointer-events-none absolute inset-0 bg-[#ecd3f5]/25 mix-blend-soft-light"
               />
+              <div className="absolute inset-x-0 bottom-0 z-10 flex gap-2 p-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(event) => {
+                    const files = event.target.files
+                    if (!files || files.length === 0) {
+                      return
+                    }
+                    setUploadError(null)
+                    void startUpload(Array.from(files))
+                    event.target.value = ""
+                  }}
+                />
+                <button
+                  type="button"
+                  disabled={isUploading || saving}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border-2 border-border bg-background/95 px-3 text-sm font-heading shadow-shadow disabled:opacity-50"
+                >
+                  <ImagePlus className="size-4" />
+                  {isUploading
+                    ? "Uploading…"
+                    : draft.image
+                      ? "Change photo"
+                      : "Upload photo"}
+                </button>
+                {draft.image ? (
+                  <button
+                    type="button"
+                    disabled={isUploading || saving}
+                    aria-label="Remove photo"
+                    onClick={() =>
+                      setDraft((current) => ({ ...current, image: "" }))
+                    }
+                    className="grid size-10 place-items-center rounded-xl border-2 border-border bg-background/95 shadow-shadow disabled:opacity-50"
+                  >
+                    <X className="size-4" />
+                  </button>
+                ) : null}
+              </div>
             </figure>
+            {uploadError ? (
+              <p className="mt-2 text-sm text-red-700">{uploadError}</p>
+            ) : null}
 
             {shops && shops.length > 0 ? (
               <label className="mt-4 block">
@@ -372,7 +444,7 @@ function MixForm({
           <div className="px-4 pb-4">
             <Button
               type="submit"
-              disabled={saving}
+              disabled={saving || isUploading}
               className="h-12 w-full rounded-xl bg-surface-2 text-foreground"
             >
               Save
@@ -395,8 +467,16 @@ export function MixEdit({ mix }: { mix: MixDetailData }) {
       title="Edit mix"
       backHref={`/mixes/${mix.slug}`}
       backLabel="Back to mix"
-      image={mix.image || undefined}
-      initial={mix}
+      initial={{
+        name: mix.name,
+        price: mix.price,
+        description: mix.description,
+        image: mix.image ?? "",
+        ingredients: mix.ingredients,
+        preparation: mix.preparation,
+        tags: mix.tags,
+        available: mix.available,
+      }}
       saving={update.isPending}
       onSave={(draft) => update.mutate({ slug: mix.slug, ...draft })}
     />
