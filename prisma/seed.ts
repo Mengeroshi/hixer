@@ -13,47 +13,136 @@ function slugify(name: string) {
   return base || "mix"
 }
 
-async function main() {
-  const email = "afterglow@hixy.local"
-  const passwordHash = await hash("afterglow1", 10)
+const stores = [
+  {
+    slug: "afterglow",
+    email: "afterglow@hixy.local",
+    password: "afterglow1",
+    name: shop.name,
+    handle: shop.handle,
+    bio: "Ice cream, smoothies, and a few coffees.",
+    followers: shop.followers,
+    following: shop.following,
+    recipes,
+  },
+  {
+    slug: "moonbeam",
+    email: "moonbeam@hixy.local",
+    password: "moonbeam1",
+    name: "Moonbeam",
+    handle: "@moonbeam.cup",
+    bio: "Matcha, oat foam, and late-night soft serve.",
+    followers: "840",
+    following: 42,
+    recipes: [
+      {
+        name: "Hojicha cloud",
+        kind: "Soft serve",
+        slug: "moonbeam-hojicha-cloud",
+        price: "$5.50",
+        image: "",
+        description: "Toasted hojicha soft serve with oat foam.",
+        ingredients: ["Hojicha", "Oat milk", "Sugar"],
+        preparation: ["Churn soft serve", "Top with oat foam"],
+        tags: ["Matcha", "Soft serve"],
+        available: true,
+        house: true,
+      },
+      {
+        name: "Yuzu night float",
+        kind: "Float",
+        slug: "moonbeam-yuzu-night-float",
+        price: "$6.00",
+        image: "",
+        description: "Yuzu soda over vanilla soft serve.",
+        ingredients: ["Yuzu soda", "Vanilla soft serve"],
+        preparation: ["Scoop soft serve", "Pour yuzu soda"],
+        tags: ["Float", "Yuzu"],
+        available: true,
+        house: true,
+      },
+    ],
+  },
+  {
+    slug: "velvet-cone",
+    email: "velvetcone@hixy.local",
+    password: "velvetcone1",
+    name: "Velvet Cone",
+    handle: "@velvet.cone",
+    bio: "Small-batch cones, roasted nuts, and warm toppings.",
+    followers: "2.1k",
+    following: 63,
+    recipes: [
+      {
+        name: "Black sesame cone",
+        kind: "Ice cream",
+        slug: "velvet-black-sesame-cone",
+        price: "$6.50",
+        image: "",
+        description: "Black sesame ice cream in a charcoal cone.",
+        ingredients: ["Black sesame", "Cream", "Charcoal cone"],
+        preparation: ["Scoop into cone", "Dust with sesame"],
+        tags: ["Cone", "Sesame"],
+        available: true,
+        house: true,
+      },
+      {
+        name: "Warm pistachio drizzle",
+        kind: "Ice cream",
+        slug: "velvet-warm-pistachio-drizzle",
+        price: "$7.00",
+        image: "",
+        description: "Pistachio ice cream finished with warm honey.",
+        ingredients: ["Pistachio ice cream", "Honey", "Salt"],
+        preparation: ["Scoop", "Warm honey", "Drizzle"],
+        tags: ["Pistachio", "House"],
+        available: true,
+        house: true,
+      },
+    ],
+  },
+] as const
+
+async function seedStore(entry: (typeof stores)[number]) {
+  const passwordHash = await hash(entry.password, 10)
 
   const owner = await db.user.upsert({
-    where: { email },
+    where: { email: entry.email },
     update: {
-      name: shop.name,
+      name: entry.name,
       passwordHash,
       isStore: true,
     },
     create: {
-      email,
-      name: shop.name,
+      email: entry.email,
+      name: entry.name,
       passwordHash,
       isStore: true,
     },
   })
 
   const store = await db.store.upsert({
-    where: { slug: "afterglow" },
+    where: { slug: entry.slug },
     update: {
-      name: shop.name,
-      handle: shop.handle,
-      bio: "Ice cream, smoothies, and a few coffees.",
-      followers: shop.followers,
-      following: shop.following,
+      name: entry.name,
+      handle: entry.handle,
+      bio: entry.bio,
+      followers: entry.followers,
+      following: entry.following,
       ownerId: owner.id,
     },
     create: {
-      slug: "afterglow",
-      name: shop.name,
-      handle: shop.handle,
-      bio: "Ice cream, smoothies, and a few coffees.",
-      followers: shop.followers,
-      following: shop.following,
+      slug: entry.slug,
+      name: entry.name,
+      handle: entry.handle,
+      bio: entry.bio,
+      followers: entry.followers,
+      following: entry.following,
       ownerId: owner.id,
     },
   })
 
-  for (const [position, recipe] of recipes.entries()) {
+  for (const [position, recipe] of entry.recipes.entries()) {
     const slug = recipe.slug ?? slugify(recipe.name)
     const data = {
       name: recipe.name,
@@ -77,10 +166,20 @@ async function main() {
     })
   }
 
-  await db.mix.updateMany({
-    where: { storeId: null },
-    data: { storeId: store.id },
-  })
+  return {
+    store: entry.name,
+    email: entry.email,
+    password: entry.password,
+  }
+}
+
+async function main() {
+  const created = []
+  for (const entry of stores) {
+    created.push(await seedStore(entry))
+  }
+
+  console.log(JSON.stringify(created, null, 2))
 }
 
 main()

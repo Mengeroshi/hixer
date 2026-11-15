@@ -1,15 +1,21 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import { StoreProfile } from "~/app/_components/store-profile"
 import { auth } from "~/server/auth"
 import { api } from "~/trpc/server"
 
 export default async function ProfilePage() {
-  const [store, session] = await Promise.all([
-    api.store.bySlug({ slug: "afterglow" }),
-    auth(),
-  ])
+  const session = await auth()
+  if (!session?.user) {
+    redirect("/login?callbackUrl=/profile")
+  }
 
+  const mine = session.user.isStore ? await api.store.mine() : null
+  if (!mine) {
+    notFound()
+  }
+
+  const store = await api.store.bySlug({ slug: mine.slug })
   if (!store) {
     notFound()
   }
@@ -18,7 +24,7 @@ export default async function ProfilePage() {
     <StoreProfile
       store={store}
       mixes={store.mixes}
-      user={session?.user ?? null}
+      user={session.user}
     />
   )
 }
