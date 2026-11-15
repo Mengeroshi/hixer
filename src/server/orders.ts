@@ -34,16 +34,24 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 export function parsePeyTransaction(raw: unknown): PeyTransactionSnapshot | null {
-  const record = asRecord(raw)
-  if (!record || typeof record.id !== "string" || !record.id) {
+  const top = asRecord(raw)
+  const nested = asRecord(top?.data)
+  const record =
+    top && typeof top.id === "string" && top.id
+      ? top
+      : nested && typeof nested.id === "string" && nested.id
+        ? nested
+        : null
+  if (!record || typeof record.id !== "string") {
     return null
   }
+  const id = record.id
 
   const breakdown = asRecord(record.amountBreakdown)
   const metadata = asRecord(record.metadata)
 
   return {
-    id: record.id,
+    id,
     status: typeof record.status === "string" ? record.status : undefined,
     amount: typeof record.amount === "number" ? record.amount : undefined,
     amountBreakdown: breakdown

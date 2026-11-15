@@ -119,6 +119,18 @@ export type PeyLookupResult = {
   raw: unknown
 }
 
+function unwrapPeyRecord(payload: unknown): unknown {
+  const record = asRecord(payload)
+  if (!record) {
+    return payload
+  }
+  const nested = asRecord(record.data)
+  if (nested && typeof nested.id === "string") {
+    return nested
+  }
+  return payload
+}
+
 export async function getTransaction(id: string): Promise<PeyLookupResult> {
   const trimmed = id.trim()
   if (!trimmed) {
@@ -135,7 +147,7 @@ export async function getTransaction(id: string): Promise<PeyLookupResult> {
     )
   }
 
-  return { raw: payload }
+  return { raw: unwrapPeyRecord(payload) }
 }
 
 export async function getCodiQrTransactions(
