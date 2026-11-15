@@ -12,7 +12,13 @@ import {
 
 const initialState: AuthActionState = {}
 
-export function LoginForm({ authError }: { authError?: string }) {
+export function LoginForm({
+  authError,
+  callbackUrl = "/",
+}: {
+  authError?: string
+  callbackUrl?: string
+}) {
   const [mode, setMode] = useState<"signin" | "signup">("signin")
   const [isStore, setIsStore] = useState(false)
   const action = mode === "signin" ? signInWithEmail : registerWithEmail
@@ -22,6 +28,7 @@ export function LoginForm({ authError }: { authError?: string }) {
   return (
     <div className="flex flex-1 flex-col gap-5">
       <form action={formAction} className="flex flex-col gap-3">
+        <input type="hidden" name="callbackUrl" value={callbackUrl} />
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-heading">Email</span>
           <input

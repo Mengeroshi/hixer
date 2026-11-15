@@ -27,6 +27,21 @@ model Post {
     @@index([name])
 }
 
+model Store {
+    id        String   @id @default(cuid())
+    slug      String   @unique
+    name      String
+    handle    String
+    bio       String   @default("")
+    followers String   @default("0")
+    following Int      @default(0)
+    ownerId   String?  @unique
+    owner     User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+    mixes     Mix[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
 model Mix {
     id          String   @id @default(cuid())
     slug        String   @unique
@@ -41,8 +56,12 @@ model Mix {
     available   Boolean  @default(true)
     house       Boolean  @default(false)
     position    Int
+    storeId     String
+    store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
+
+    @@index([storeId])
 }
 
 // Necessary for Next auth
@@ -84,6 +103,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    store         Store?
 }
 
 model VerificationToken {

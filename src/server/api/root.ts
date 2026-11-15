@@ -1,5 +1,6 @@
 import { mixRouter } from "~/server/api/routers/mix";
 import { postRouter } from "~/server/api/routers/post";
+import { storeRouter } from "~/server/api/routers/store";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -9,6 +10,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   post: postRouter,
+  store: storeRouter,
   mix: mixRouter,
 });
 

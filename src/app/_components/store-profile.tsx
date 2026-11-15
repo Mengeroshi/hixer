@@ -12,7 +12,6 @@ import {
 } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
-import { shop } from "~/data/afterglow"
 import { signOutAction } from "~/server/auth/actions"
 
 type MixTile = {
@@ -23,11 +22,23 @@ type MixTile = {
   description: string
 }
 
+type StoreInfo = {
+  id: string
+  slug: string
+  name: string
+  handle: string
+  bio: string
+  followers: string
+  following: number
+  ownerId: string | null
+}
+
 type ProfileUser = {
   id: string
   name?: string | null
   email?: string | null
   image?: string | null
+  isStore?: boolean
 }
 
 const tabs = [
@@ -44,16 +55,19 @@ const nav = [
 ] as const
 
 export function StoreProfile({
+  store,
   mixes,
   user,
 }: {
+  store: StoreInfo
   mixes: MixTile[]
   user: ProfileUser | null
 }) {
+  const canManage = Boolean(user && store.ownerId === user.id)
   const stats = [
     { label: "Mixes", value: String(mixes.length) },
-    { label: "Followers", value: shop.followers },
-    { label: "Following", value: String(shop.following) },
+    { label: "Followers", value: store.followers },
+    { label: "Following", value: String(store.following) },
   ]
 
   return (
@@ -62,7 +76,7 @@ export function StoreProfile({
         <div className="flex-1 overflow-y-auto px-4 pb-4">
           <header className="grid grid-cols-[1fr_auto_1fr] items-center py-4">
             <span />
-            <h1 className="text-base font-heading">{shop.handle}</h1>
+            <h1 className="text-base font-heading">{store.handle}</h1>
             <div className="flex justify-end">
               {user ? (
                 <form action={signOutAction}>
@@ -101,8 +115,8 @@ export function StoreProfile({
           </section>
 
           <div className="mt-4">
-            <p className="font-heading">{shop.name}</p>
-            <p className="text-sm">Ice cream, smoothies, and a few coffees.</p>
+            <p className="font-heading">{store.name}</p>
+            <p className="text-sm">{store.bio}</p>
           </div>
 
           <div className="mt-4 flex gap-2">
@@ -190,13 +204,15 @@ export function StoreProfile({
         </div>
 
         <div className="mx-4 mb-4 flex flex-col items-end gap-3">
-          <Link
-            href="/mixes/new"
-            aria-label="New"
-            className="grid size-12 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
-          >
-            <Plus className="size-5" />
-          </Link>
+          {canManage ? (
+            <Link
+              href="/mixes/new"
+              aria-label="New"
+              className="grid size-12 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
+            >
+              <Plus className="size-5" />
+            </Link>
+          ) : null}
           <nav className="grid w-full shrink-0 grid-cols-4 rounded-full border-2 border-border bg-foreground">
           {nav.map((item) => {
             const Icon = item.icon

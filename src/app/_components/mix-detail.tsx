@@ -14,7 +14,13 @@ export type MixDetailData = {
   available: boolean
 }
 
-export function MixDetail({ mix }: { mix: MixDetailData }) {
+export function MixDetail({
+  mix,
+  canEdit = false,
+}: {
+  mix: MixDetailData
+  canEdit?: boolean
+}) {
   return (
     <div className="min-h-dvh bg-neutral-200 text-foreground">
       <div className="relative mx-auto flex h-dvh w-full max-w-[430px] flex-col bg-background">
@@ -121,13 +127,15 @@ export function MixDetail({ mix }: { mix: MixDetailData }) {
           ) : null}
         </div>
 
-        <Link
-          href={`/mixes/${mix.slug}/edit`}
-          aria-label="Edit mix"
-          className="absolute right-4 bottom-4 z-10 grid size-12 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
-        >
-          <Pencil className="size-5" />
-        </Link>
+        {canEdit ? (
+          <Link
+            href={`/mixes/${mix.slug}/edit`}
+            aria-label="Edit mix"
+            className="absolute right-4 bottom-4 z-10 grid size-12 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
+          >
+            <Pencil className="size-5" />
+          </Link>
+        ) : null}
       </div>
     </div>
   )

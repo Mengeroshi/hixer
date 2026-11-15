@@ -1,5 +1,6 @@
+import { hash } from "bcryptjs"
 import { PrismaClient } from "../generated/prisma/index.js"
-import { recipes } from "../src/data/afterglow.ts"
+import { recipes, shop } from "../src/data/afterglow.ts"
 
 const db = new PrismaClient()
 
@@ -13,6 +14,45 @@ function slugify(name: string) {
 }
 
 async function main() {
+  const email = "afterglow@hixy.local"
+  const passwordHash = await hash("afterglow1", 10)
+
+  const owner = await db.user.upsert({
+    where: { email },
+    update: {
+      name: shop.name,
+      passwordHash,
+      isStore: true,
+    },
+    create: {
+      email,
+      name: shop.name,
+      passwordHash,
+      isStore: true,
+    },
+  })
+
+  const store = await db.store.upsert({
+    where: { slug: "afterglow" },
+    update: {
+      name: shop.name,
+      handle: shop.handle,
+      bio: "Ice cream, smoothies, and a few coffees.",
+      followers: shop.followers,
+      following: shop.following,
+      ownerId: owner.id,
+    },
+    create: {
+      slug: "afterglow",
+      name: shop.name,
+      handle: shop.handle,
+      bio: "Ice cream, smoothies, and a few coffees.",
+      followers: shop.followers,
+      following: shop.following,
+      ownerId: owner.id,
+    },
+  })
+
   for (const [position, recipe] of recipes.entries()) {
     const slug = recipe.slug ?? slugify(recipe.name)
     const data = {
@@ -27,6 +67,7 @@ async function main() {
       available: recipe.available ?? true,
       house: recipe.house ?? false,
       position,
+      storeId: store.id,
     }
 
     await db.mix.upsert({
@@ -35,6 +76,11 @@ async function main() {
       create: { slug, ...data },
     })
   }
+
+  await db.mix.updateMany({
+    where: { storeId: null },
+    data: { storeId: store.id },
+  })
 }
 
 main()

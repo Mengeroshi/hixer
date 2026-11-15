@@ -10,17 +10,25 @@ const authErrors: Record<string, string> = {
   Default: "Something went wrong while signing in",
 }
 
+function safeCallbackUrl(value: string | undefined) {
+  if (value?.startsWith("/") && !value.startsWith("//")) {
+    return value
+  }
+  return "/"
+}
+
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; callbackUrl?: string }>
 }) {
+  const params = await searchParams
+  const callbackUrl = safeCallbackUrl(params.callbackUrl)
   const session = await auth()
   if (session?.user) {
-    redirect("/")
+    redirect(callbackUrl)
   }
 
-  const params = await searchParams
   const authError = params.error
     ? (authErrors[params.error] ?? authErrors.Default)
     : undefined
@@ -35,7 +43,7 @@ export default async function LoginPage({
           </p>
         </header>
 
-        <LoginForm authError={authError} />
+        <LoginForm authError={authError} callbackUrl={callbackUrl} />
       </div>
     </div>
   )
