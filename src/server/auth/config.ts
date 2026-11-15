@@ -25,12 +25,6 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    isStore?: boolean;
-  }
-}
-
 const credentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
@@ -86,7 +80,7 @@ export const authConfig = {
     jwt: ({ token, user }) => {
       if (user) {
         token.sub = user.id;
-        token.isStore = user.isStore ?? false;
+        token.isStore = Boolean(user.isStore);
       }
       return token;
     },
@@ -95,7 +89,7 @@ export const authConfig = {
       user: {
         ...session.user,
         id: token.sub!,
-        isStore: token.isStore ?? false,
+        isStore: Boolean(token.isStore),
       },
     }),
   },

@@ -30,6 +30,14 @@ function formValues(formData: FormData) {
   };
 }
 
+function safeRedirectTo(formData: FormData) {
+  const value = formString(formData, "callbackUrl");
+  if (value.startsWith("/") && !value.startsWith("//")) {
+    return value;
+  }
+  return "/";
+}
+
 export async function registerWithEmail(
   _prev: AuthActionState,
   formData: FormData,
@@ -54,11 +62,13 @@ export async function registerWithEmail(
     },
   });
 
+  const redirectTo = safeRedirectTo(formData);
+
   try {
     await signIn("credentials", {
       email,
       password: parsed.data.password,
-      redirectTo: "/",
+      redirectTo,
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -79,11 +89,13 @@ export async function signInWithEmail(
     return { error: parsed.error.issues[0]?.message ?? "Invalid details" };
   }
 
+  const redirectTo = safeRedirectTo(formData);
+
   try {
     await signIn("credentials", {
       email: parsed.data.email.toLowerCase(),
       password: parsed.data.password,
-      redirectTo: "/",
+      redirectTo,
     });
   } catch (error) {
     if (error instanceof AuthError) {
