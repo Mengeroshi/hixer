@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link2, Minus, Plus, QrCode, Smartphone, Trash2, X } from "lucide-react"
 
 import { CodiQr } from "~/app/_components/codi-qr"
@@ -29,54 +29,6 @@ import { api } from "~/trpc/react"
 
 type CheckoutStep = "choose" | "qr" | "push" | "link"
 
-function truncateForStudy(value: unknown): unknown {
-  if (typeof value === "string" && value.length > 120) {
-    return `${value.slice(0, 80)}…(${value.length} chars)`
-  }
-  if (Array.isArray(value)) {
-    return value.map(truncateForStudy)
-  }
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, entry]) => [key, truncateForStudy(entry)]),
-    )
-  }
-  return value
-}
-
-function PeyRawJson({
-  raw,
-  title = "Pey response",
-}: {
-  raw: unknown
-  title?: string
-}) {
-  const [copied, setCopied] = useState(false)
-
-  async function copyRaw() {
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(raw, null, 2))
-      setCopied(true)
-    } catch {
-      setCopied(false)
-    }
-  }
-
-  return (
-    <div className="w-full text-left">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-xs font-heading text-foreground/70">{title}</p>
-        <Button type="button" size="xs" variant="neutral" onClick={copyRaw}>
-          {copied ? "Copied" : "Copy JSON"}
-        </Button>
-      </div>
-      <pre className="max-h-48 w-full overflow-auto rounded-2xl border-2 border-border bg-surface-5 p-3 text-[10px] leading-relaxed break-all whitespace-pre-wrap shadow-shadow">
-        {JSON.stringify(truncateForStudy(raw), null, 2)}
-      </pre>
-    </div>
-  )
-}
-
 export function StoreCart({
   storeSlug,
   storeName,
@@ -94,7 +46,6 @@ export function StoreCart({
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [phoneNumber, setPhoneNumber] = useState("")
   const [copied, setCopied] = useState(false)
-  const [statusRaw, setStatusRaw] = useState<unknown>(null)
   const [qr, setQr] = useState<{
     id: string
     imageSrc: string | null
@@ -104,7 +55,6 @@ export function StoreCart({
     numRef: string
     storeName: string
     payoutName: string
-    raw: unknown
   } | null>(null)
   const [push, setPush] = useState<{
     transactionId: string
@@ -114,7 +64,6 @@ export function StoreCart({
     storeName: string
     payoutName: string
     codiId: string
-    raw: unknown
   } | null>(null)
   const [link, setLink] = useState<{
     id: string
@@ -123,16 +72,13 @@ export function StoreCart({
     numRef: string
     storeName: string
     payoutName: string
-    raw: unknown
   } | null>(null)
 
   const createQr = api.checkout.createQr.useMutation({
     onSuccess: (data) => {
-      console.log("[pey] createQr", data.raw)
       setQr(data)
       setPush(null)
       setLink(null)
-      setStatusRaw(null)
       setCheckoutError(null)
       setStep("qr")
     },
@@ -144,11 +90,9 @@ export function StoreCart({
 
   const createPush = api.checkout.createPush.useMutation({
     onSuccess: (data) => {
-      console.log("[pey] createPush", data.raw)
       setPush(data)
       setQr(null)
       setLink(null)
-      setStatusRaw(null)
       setCheckoutError(null)
       setStep("push")
     },
@@ -160,11 +104,9 @@ export function StoreCart({
 
   const createPaymentLink = api.checkout.createPaymentLink.useMutation({
     onSuccess: (data) => {
-      console.log("[pey] createPaymentLink", data.raw)
       setLink(data)
       setQr(null)
       setPush(null)
-      setStatusRaw(null)
       setCheckoutError(null)
       setCopied(false)
       setStep("link")
@@ -177,39 +119,41 @@ export function StoreCart({
 
   const getTransaction = api.checkout.getTransaction.useMutation({
     onSuccess: (data) => {
-      console.log("[pey] getTransaction", data.raw)
-      setStatusRaw(data.raw)
       setCheckoutError(null)
 
-      const status =
-        data.raw &&
-        typeof data.raw === "object" &&
-        !Array.isArray(data.raw) &&
-        "status" in data.raw
-          ? String((data.raw as { status?: unknown }).status ?? "")
-          : ""
-      const id =
-        data.raw &&
-        typeof data.raw === "object" &&
-        !Array.isArray(data.raw) &&
-        "id" in data.raw &&
-        typeof (data.raw as { id?: unknown }).id === "string"
-          ? (data.raw as { id: string }).id
+      const raw =
+        data.raw && typeof data.raw === "object" && !Array.isArray(data.raw)
+          ? (data.raw as { id?: unknown; status?: unknown; data?: unknown })
           : null
+      const nested =
+        raw?.data && typeof raw.data === "object" && !Array.isArray(raw.data)
+          ? (raw.data as { id?: unknown; status?: unknown })
+          : null
+      const status =
+        data.order?.status ??
+        (typeof raw?.status === "string" ? raw.status : null) ??
+        (typeof nested?.status === "string" ? nested.status : null) ??
+        ""
+      const id =
+        data.order?.peyTransactionId ??
+        (typeof raw?.id === "string" ? raw.id : null) ??
+        (typeof nested?.id === "string" ? nested.id : null)
 
       if (status === "PAID" && id) {
         router.push(`/payment/${id}`)
       }
     },
     onError: (error) => {
+      // Keep waiting quietly while the push/QR is still unpaid.
+      if (/not found|404/i.test(error.message)) {
+        return
+      }
       setCheckoutError(error.message)
     },
   })
 
   const getCodiQrTransactions = api.checkout.getCodiQrTransactions.useMutation({
     onSuccess: (data) => {
-      console.log("[pey] getCodiQrTransactions", data.raw)
-      setStatusRaw(data.raw)
       setCheckoutError(null)
 
       const items = Array.isArray(
@@ -238,8 +182,6 @@ export function StoreCart({
 
   const getPaymentLinkStatus = api.checkout.getPaymentLink.useMutation({
     onSuccess: (data) => {
-      console.log("[pey] getPaymentLink", data.raw)
-      setStatusRaw(data.raw)
       setCheckoutError(null)
 
       const transactions = Array.isArray(
@@ -288,6 +230,9 @@ export function StoreCart({
     price: item.price,
     quantity: item.quantity,
   }))
+  const orderItemsRef = useRef(orderItems)
+  orderItemsRef.current = orderItems
+
   const subtotal = items.reduce(
     (total, item) => total + parsePrice(item.price) * item.quantity,
     0,
@@ -296,11 +241,80 @@ export function StoreCart({
     getTransaction.isPending ||
     getCodiQrTransactions.isPending ||
     getPaymentLinkStatus.isPending
+  const statusBusyRef = useRef(statusBusy)
+  statusBusyRef.current = statusBusy
+  const pollQrRef = useRef(getCodiQrTransactions.mutate)
+  pollQrRef.current = getCodiQrTransactions.mutate
+  const pollPushRef = useRef(getTransaction.mutate)
+  pollPushRef.current = getTransaction.mutate
+  const pollLinkRef = useRef(getPaymentLinkStatus.mutate)
+  pollLinkRef.current = getPaymentLinkStatus.mutate
   const busy =
     createQr.isPending ||
     createPush.isPending ||
     createPaymentLink.isPending ||
     statusBusy
+
+  useEffect(() => {
+    if (!checkoutOpen) {
+      return
+    }
+
+    const pollMs = 3000
+
+    if (step === "qr" && qr?.id) {
+      const qrId = qr.id
+      const tick = () => {
+        if (statusBusyRef.current) {
+          return
+        }
+        setCheckoutError(null)
+        pollQrRef.current({ id: qrId })
+      }
+      tick()
+      const timer = window.setInterval(tick, pollMs)
+      return () => window.clearInterval(timer)
+    }
+
+    if (step === "push" && push?.transactionId) {
+      const transactionId = push.transactionId
+      const tick = () => {
+        if (statusBusyRef.current) {
+          return
+        }
+        setCheckoutError(null)
+        pollPushRef.current({
+          id: transactionId,
+          storeSlug,
+          items: orderItemsRef.current,
+        })
+      }
+      tick()
+      const timer = window.setInterval(tick, pollMs)
+      return () => window.clearInterval(timer)
+    }
+
+    if (step === "link" && link?.id) {
+      const linkId = link.id
+      const tick = () => {
+        if (statusBusyRef.current) {
+          return
+        }
+        setCheckoutError(null)
+        pollLinkRef.current({ id: linkId })
+      }
+      tick()
+      const timer = window.setInterval(tick, pollMs)
+      return () => window.clearInterval(timer)
+    }
+  }, [
+    checkoutOpen,
+    step,
+    qr?.id,
+    push?.transactionId,
+    link?.id,
+    storeSlug,
+  ])
 
   function openCheckout() {
     if (subtotal <= 0) {
@@ -310,39 +324,10 @@ export function StoreCart({
     setQr(null)
     setPush(null)
     setLink(null)
-    setStatusRaw(null)
     setPhoneNumber("")
     setCopied(false)
     setStep("choose")
     setCheckoutOpen(true)
-  }
-
-  function checkQrPayment() {
-    if (!qr?.id) {
-      return
-    }
-    setCheckoutError(null)
-    getCodiQrTransactions.mutate({ id: qr.id })
-  }
-
-  function checkPushPayment() {
-    if (!push?.transactionId) {
-      return
-    }
-    setCheckoutError(null)
-    getTransaction.mutate({
-      id: push.transactionId,
-      storeSlug,
-      items: orderItems,
-    })
-  }
-
-  function checkLinkPayment() {
-    if (!link?.id) {
-      return
-    }
-    setCheckoutError(null)
-    getPaymentLinkStatus.mutate({ id: link.id })
   }
 
   function payWithQr() {
@@ -692,18 +677,11 @@ export function StoreCart({
               <p className="text-center text-xs text-foreground/70">
                 {qr.payoutName} · ref {qr.numRef}
               </p>
-              <Button
-                type="button"
-                className="w-full"
-                disabled={statusBusy}
-                onClick={checkQrPayment}
-              >
-                {statusBusy ? "Checking…" : "Check payment"}
-              </Button>
-              <PeyRawJson raw={qr.raw} title="Create QR" />
-              {statusRaw ? (
-                <PeyRawJson raw={statusRaw} title="Get Transaction" />
-              ) : null}
+              <p className="text-center text-sm text-foreground/70">
+                {statusBusy
+                  ? "Checking payment…"
+                  : "Waiting for payment…"}
+              </p>
             </div>
           ) : null}
 
@@ -721,18 +699,11 @@ export function StoreCart({
               <p className="text-xs text-foreground/70">
                 CoDi folio {push.codiId}
               </p>
-              <Button
-                type="button"
-                className="w-full"
-                disabled={statusBusy}
-                onClick={checkPushPayment}
-              >
-                {statusBusy ? "Checking…" : "Check payment"}
-              </Button>
-              <PeyRawJson raw={push.raw} title="Create Push" />
-              {statusRaw ? (
-                <PeyRawJson raw={statusRaw} title="Get Transaction" />
-              ) : null}
+              <p className="text-sm text-foreground/70">
+                {statusBusy
+                  ? "Checking payment…"
+                  : "Waiting for payment…"}
+              </p>
             </div>
           ) : null}
 
@@ -765,18 +736,11 @@ export function StoreCart({
                   Open
                 </a>
               </div>
-              <Button
-                type="button"
-                className="w-full"
-                disabled={statusBusy}
-                onClick={checkLinkPayment}
-              >
-                {statusBusy ? "Checking…" : "Check payment"}
-              </Button>
-              <PeyRawJson raw={link.raw} title="Create Payment Link" />
-              {statusRaw ? (
-                <PeyRawJson raw={statusRaw} title="Get Transaction" />
-              ) : null}
+              <p className="text-center text-sm text-foreground/70">
+                {statusBusy
+                  ? "Checking payment…"
+                  : "Waiting for payment…"}
+              </p>
             </div>
           ) : null}
 
