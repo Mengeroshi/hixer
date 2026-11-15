@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url"
 import { spawn } from "node:child_process"
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
+const vercelBin = path.join(root, "node_modules", ".bin", "vercel")
 
 async function loadEnvFile(fileName) {
   try {
@@ -15,11 +16,15 @@ async function loadEnvFile(fileName) {
       if (eq < 0) continue
       const key = trimmed.slice(0, eq).trim()
       let value = trimmed.slice(eq + 1).trim()
-      if (
-        (value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))
-      ) {
-        value = value.slice(1, -1)
+      if (value.startsWith('"')) {
+        const end = value.indexOf('"', 1)
+        value = end >= 0 ? value.slice(1, end) : value.slice(1)
+      } else if (value.startsWith("'")) {
+        const end = value.indexOf("'", 1)
+        value = end >= 0 ? value.slice(1, end) : value.slice(1)
+      } else {
+        const hash = value.indexOf(" #")
+        if (hash >= 0) value = value.slice(0, hash).trim()
       }
       process.env[key] = value
     }
@@ -31,19 +36,19 @@ async function loadEnvFile(fileName) {
 
 function run(args) {
   return new Promise((resolve, reject) => {
-    const child = spawn("npx", args, {
+    const child = spawn(vercelBin, args, {
       cwd: root,
       stdio: "inherit",
       env: process.env,
     })
     child.on("error", reject)
     child.on("exit", (code) =>
-      code === 0 ? resolve() : reject(new Error(args.join(" "))),
+      code === 0 ? resolve() : reject(new Error(`vercel ${args[0]} ${args[1] ?? ""} failed`)),
     )
   })
 }
 
-// Base secrets from .env, then .env.local overrides (Neon + pulled vars).
+// .env then .env.local (Neon URL overrides local sqlite)
 await loadEnvFile(".env")
 await loadEnvFile(".env.local")
 
@@ -71,9 +76,12 @@ for (const key of keys) {
     missing.push(key)
     continue
   }
+  if (key === "DATABASE_URL" && value.startsWith("file:")) {
+    console.error("DATABASE_URL is still sqlite. Put Neon URL in .env.local and retry.")
+    process.exit(1)
+  }
   console.log(`Syncing ${key}…`)
   await run([
-    "vercel",
     "env",
     "add",
     key,
@@ -95,5 +103,5 @@ if (missing.length) {
 
 console.log(`Synced: ${synced.join(", ")}`)
 console.log("Redeploying production…")
-await run(["vercel", "deploy", "--prod", "--yes"])
+await run(["deploy", "--prod", "--yes"])
 console.log("Done. Live: https://hixer.vercel.app")
