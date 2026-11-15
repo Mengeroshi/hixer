@@ -12,7 +12,8 @@ export default async function MixPage({ params }: MixPageProps) {
   const recipe = getRecipeBySlug(slug)
 
   if (
-    !recipe?.description ||
+    !recipe?.slug ||
+    !recipe.description ||
     !recipe.ingredients ||
     recipe.available === undefined
   ) {
@@ -23,6 +24,7 @@ export default async function MixPage({ params }: MixPageProps) {
     <MixDetail
       recipe={{
         ...recipe,
+        slug: recipe.slug,
         description: recipe.description,
         ingredients: recipe.ingredients,
         available: recipe.available,
