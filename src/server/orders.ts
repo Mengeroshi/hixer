@@ -130,7 +130,7 @@ export async function createPendingOrder(
       currency: input.currency ?? "MXN",
       numRef: input.numRef,
       description: input.description,
-      items: input.items as Prisma.InputJsonValue,
+      items: input.items,
       payableType: input.payableType,
       payableId: input.payableId,
       peyTransactionId: input.peyTransactionId,
@@ -170,6 +170,13 @@ export async function upsertOrderFromPeyTransaction(
     storeHandle: input.store.handle,
   }
 
+  const metadata =
+    input.transaction.metadata == null
+      ? undefined
+      : (input.transaction.metadata as Prisma.InputJsonValue)
+  const raw = input.raw as Prisma.InputJsonValue
+  const items = (input.items ?? []) as Prisma.InputJsonValue
+
   const data = {
     ...storeFields,
     status,
@@ -184,17 +191,15 @@ export async function upsertOrderFromPeyTransaction(
     description: input.transaction.description ?? "",
     trackingKey,
     numRef: input.numRef ?? existing?.numRef ?? null,
-    metadata: (input.transaction.metadata ?? undefined) as
-      | Prisma.InputJsonValue
-      | undefined,
-    raw: input.raw as Prisma.InputJsonValue,
+    metadata,
+    raw,
     paidAt,
     peyCreatedAt,
     ...(input.items
-      ? { items: input.items as Prisma.InputJsonValue }
+      ? { items }
       : existing
         ? {}
-        : { items: [] as Prisma.InputJsonValue }),
+        : { items }),
   }
 
   if (existing) {
@@ -232,7 +237,8 @@ export async function upsertOrderFromPeyTransaction(
       data: {
         ...data,
         peyTransactionId: input.transaction.id,
-        items: (input.items ?? pending.items) as Prisma.InputJsonValue,
+        items: (input.items ??
+          pending.items) as Prisma.InputJsonValue,
       },
     })
   }
@@ -242,7 +248,7 @@ export async function upsertOrderFromPeyTransaction(
       userId: input.userId,
       peyTransactionId: input.transaction.id,
       ...data,
-      items: (input.items ?? []) as Prisma.InputJsonValue,
+      items,
     },
   })
 }

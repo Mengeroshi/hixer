@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server"
 
 import { getToken } from "next-auth/jwt"
 
+export const runtime = "nodejs"
+
 function isPublicPath(pathname: string) {
   return (
     pathname === "/login" ||

@@ -46,7 +46,7 @@ function asTransaction(raw: unknown): TransactionPayload | null {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     return null
   }
-  return raw as TransactionPayload
+  return raw
 }
 
 function asOrderItems(value: unknown): StoredOrderItem[] {
@@ -142,10 +142,9 @@ export function PaymentSuccess({
     const currency = record?.currency ?? tx?.currency ?? "MXN"
     const status = record?.status ?? tx?.status
     const description =
-      record?.description ||
-      tx?.description ||
-      tx?.metadata?.description ||
-      "Payment"
+      [record?.description, tx?.description, tx?.metadata?.description].find(
+        (value) => Boolean(value),
+      ) ?? "Payment"
     const storeName =
       order?.storeName ?? order?.store.name ?? savedOrder?.storeName
 
@@ -186,9 +185,9 @@ export function PaymentSuccess({
       formatDate(record?.paidAt) ??
       formatUnix(tx?.datePaid ?? tx?.dateCreated)
     const storeHandle =
-      order?.storeHandle ||
-      order?.store.handle ||
-      savedOrder?.storeHandle ||
+      order?.storeHandle ??
+      order?.store.handle ??
+      savedOrder?.storeHandle ??
       null
     const details = [
       storeName,

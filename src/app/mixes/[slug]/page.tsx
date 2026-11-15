@@ -18,7 +18,7 @@ export default async function MixPage({ params }: MixPageProps) {
   if (!mix) notFound()
 
   const canEdit = Boolean(
-    session?.user && mix.authorId === session.user.id,
+    session?.user?.id && mix.authorId === session.user.id,
   )
 
   return <MixDetail mix={mix} canEdit={canEdit} />
