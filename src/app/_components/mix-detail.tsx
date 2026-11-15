@@ -1,10 +1,18 @@
+"use client"
+
 import Link from "next/link"
+import { useSyncExternalStore } from "react"
 import { ArrowLeft, Pencil } from "lucide-react"
 
 import type { Recipe } from "~/data/afterglow"
+import {
+  readMixOverride,
+  subscribeMixOverride,
+} from "~/lib/mix-overrides"
 
 type MixDetailProps = {
   recipe: Recipe & {
+    slug: string
     description: string
     ingredients: string[]
     available: boolean
@@ -13,6 +21,25 @@ type MixDetailProps = {
 }
 
 export function MixDetail({ recipe }: MixDetailProps) {
+  const override = useSyncExternalStore(
+    (onStoreChange) => subscribeMixOverride(recipe.slug, onStoreChange),
+    () => readMixOverride(recipe.slug),
+    () => null,
+  )
+
+  const mix = override
+    ? {
+        ...recipe,
+        name: override.name,
+        price: override.price,
+        description: override.description,
+        ingredients: override.ingredients,
+        preparation: override.preparation,
+        tags: override.tags,
+        available: override.available,
+      }
+    : recipe
+
   return (
     <div className="min-h-dvh bg-neutral-200 text-foreground">
       <div className="relative mx-auto flex h-dvh w-full max-w-[430px] flex-col bg-background">
@@ -25,13 +52,13 @@ export function MixDetail({ recipe }: MixDetailProps) {
             >
               <ArrowLeft className="size-4" />
             </Link>
-            <p className="text-sm font-heading">{recipe.kind}</p>
+            <p className="text-sm font-heading">{mix.kind}</p>
           </header>
 
           <figure className="relative overflow-hidden rounded-2xl border-2 border-border shadow-shadow">
             <img
-              src={recipe.image}
-              alt={recipe.name}
+              src={mix.image}
+              alt={mix.name}
               className="aspect-square w-full object-cover grayscale-[0.4] sepia-[0.35] saturate-50 contrast-95"
             />
             <span
@@ -46,26 +73,26 @@ export function MixDetail({ recipe }: MixDetailProps) {
 
           <div className="mt-4 flex items-start justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-heading tracking-tight">{recipe.name}</h1>
-              <p className="mt-1 text-lg font-heading">{recipe.price}</p>
+              <h1 className="text-2xl font-heading tracking-tight">{mix.name}</h1>
+              <p className="mt-1 text-lg font-heading">{mix.price}</p>
             </div>
             <span
               className={
-                recipe.available
+                mix.available
                   ? "shrink-0 rounded-xl border-2 border-border bg-surface-2 px-3 py-1 text-xs font-heading"
                   : "shrink-0 rounded-xl border-2 border-border bg-surface-3 px-3 py-1 text-xs font-heading text-foreground/50"
               }
             >
-              {recipe.available ? "Available" : "Sold out"}
+              {mix.available ? "Available" : "Sold out"}
             </span>
           </div>
 
-          <p className="mt-3 text-sm">{recipe.description}</p>
+          <p className="mt-3 text-sm">{mix.description}</p>
 
           <section className="mt-6">
             <h2 className="text-sm font-heading">Ingredients</h2>
             <ul className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(9.5rem,1fr))] gap-2">
-              {recipe.ingredients.map((ingredient) => (
+              {mix.ingredients.map((ingredient) => (
                 <li
                   key={ingredient}
                   className="rounded-xl border-2 border-border bg-surface-3 px-3 py-2 text-sm"
@@ -76,13 +103,13 @@ export function MixDetail({ recipe }: MixDetailProps) {
             </ul>
           </section>
 
-          {recipe.preparation ? (
+          {mix.preparation && mix.preparation.length > 0 ? (
             <section className="mt-6">
               <h2 className="text-sm font-heading">Preparation</h2>
               <ol className="mt-2 space-y-2">
-                {recipe.preparation.map((step, index) => (
+                {mix.preparation.map((step, index) => (
                   <li
-                    key={step}
+                    key={`${index}-${step}`}
                     className="rounded-xl border-2 border-border bg-main px-3 py-2 text-sm"
                   >
                     <span className="font-heading">{index + 1}.</span> {step}
@@ -92,11 +119,11 @@ export function MixDetail({ recipe }: MixDetailProps) {
             </section>
           ) : null}
 
-          {recipe.tags ? (
+          {mix.tags && mix.tags.length > 0 ? (
             <section className="mt-6">
               <h2 className="text-sm font-heading">Tags</h2>
               <ul className="mt-2 flex flex-wrap gap-2">
-                {recipe.tags.map((tag) => (
+                {mix.tags.map((tag) => (
                   <li
                     key={tag}
                     className="rounded-full border-2 border-border bg-surface-5 px-3 py-1 text-xs font-heading"
@@ -109,13 +136,13 @@ export function MixDetail({ recipe }: MixDetailProps) {
           ) : null}
         </div>
 
-        <button
-          type="button"
+        <Link
+          href={`/mixes/${mix.slug}/edit`}
           aria-label="Edit mix"
           className="absolute right-4 bottom-4 z-10 grid size-12 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
         >
           <Pencil className="size-5" />
-        </button>
+        </Link>
       </div>
     </div>
   )
