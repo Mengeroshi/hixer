@@ -104,6 +104,10 @@ export function getActiveStoreCart(): StoreCart | null {
   return carts[fallback] ?? null
 }
 
+export function listStoreCarts(): StoreCart[] {
+  return Object.values(readCarts()).filter((cart) => cart.items.length > 0)
+}
+
 export function addToStoreCart(
   store: { slug: string; name: string; handle: string },
   item: Omit<CartItem, "quantity">,

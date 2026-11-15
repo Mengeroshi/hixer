@@ -8,7 +8,7 @@ const nav = [
   { label: "Home", icon: House, tone: "text-surface-1", href: "/" },
   { label: "Search", icon: Search, tone: "text-surface-3" },
   { label: "Add", icon: Plus, tone: "text-surface-2" },
-  { label: "Profile", icon: UserRound, href: "/profile" },
+  { label: "Profile", icon: UserRound, tone: "text-surface-4", href: "/profile" },
 ] as const
 
 export function AppBottomNav() {

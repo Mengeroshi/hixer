@@ -19,6 +19,7 @@ import {
 import {
   formatMoney,
   getStoreCart,
+  listStoreCarts,
   parsePrice,
   setStoreCartItemQuantity,
   subscribeCarts,
@@ -87,6 +88,7 @@ export function StoreCart({
 }) {
   const router = useRouter()
   const [cart, setCart] = useState<StoreCartData | null>(null)
+  const [allCarts, setAllCarts] = useState<StoreCartData[]>([])
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [step, setStep] = useState<CheckoutStep>("choose")
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
@@ -271,7 +273,10 @@ export function StoreCart({
   })
 
   useEffect(() => {
-    const sync = () => setCart(getStoreCart(storeSlug))
+    const sync = () => {
+      setCart(getStoreCart(storeSlug))
+      setAllCarts(listStoreCarts())
+    }
     sync()
     return subscribeCarts(sync)
   }, [storeSlug])
@@ -404,6 +409,47 @@ export function StoreCart({
               {cart?.storeHandle ?? storeHandle}
             </p>
           </Link>
+
+          {allCarts.length > 1 ? (
+            <div className="mt-4">
+              <p className="text-xs font-heading text-foreground/60">
+                Your carts
+              </p>
+              <ul className="mt-2 flex gap-2 overflow-x-auto pb-1">
+                {allCarts.map((entry) => {
+                  const count = entry.items.reduce(
+                    (total, item) => total + item.quantity,
+                    0,
+                  )
+                  const current = entry.storeSlug === storeSlug
+                  return (
+                    <li key={entry.storeSlug} className="shrink-0">
+                      {current ? (
+                        <span className="inline-flex h-10 items-center gap-2 rounded-full border-2 border-border bg-main px-3 text-sm font-heading shadow-shadow">
+                          <span className="max-w-[8rem] truncate">
+                            {entry.storeName}
+                          </span>
+                          <span className="text-xs">{count}</span>
+                        </span>
+                      ) : (
+                        <Link
+                          href={`/stores/${entry.storeSlug}/cart`}
+                          className="inline-flex h-10 items-center gap-2 rounded-full border-2 border-border bg-surface-5 px-3 text-sm font-heading shadow-shadow"
+                        >
+                          <span className="max-w-[8rem] truncate">
+                            {entry.storeName}
+                          </span>
+                          <span className="text-xs text-foreground/70">
+                            {count}
+                          </span>
+                        </Link>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          ) : null}
 
           {items.length === 0 ? (
             <div className="mt-10 rounded-2xl border-2 border-border bg-surface-5 p-6 text-center shadow-shadow">
