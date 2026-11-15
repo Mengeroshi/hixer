@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "preinstall": "node -e \"if (!String(process.env.npm_config_user_agent).startsWith('pnpm/')) { console.error('Use pnpm. npm and yarn are not supported.'); process.exit(1) }\"",
     "build": "next build",
     "check": "next lint && tsc --noEmit",
     "db:generate": "prisma migrate dev",
