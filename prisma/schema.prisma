@@ -27,6 +27,24 @@ model Post {
     @@index([name])
 }
 
+model Mix {
+    id          String   @id @default(cuid())
+    slug        String   @unique
+    name        String
+    kind        String
+    price       String
+    image       String   @default("")
+    description String   @default("")
+    ingredients Json
+    preparation Json
+    tags        Json
+    available   Boolean  @default(true)
+    house       Boolean  @default(false)
+    position    Int
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+}
+
 // Necessary for Next auth
 model Account {
     id                       String  @id @default(cuid())

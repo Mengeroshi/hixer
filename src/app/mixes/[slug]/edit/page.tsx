@@ -1,5 +1,7 @@
-import { CreatedMixEdit, MixEdit } from "~/app/_components/mix-edit"
-import { getRecipeBySlug } from "~/data/afterglow"
+import { notFound } from "next/navigation"
+
+import { MixEdit } from "~/app/_components/mix-edit"
+import { api } from "~/trpc/server"
 
 type MixEditPageProps = {
   params: Promise<{ slug: string }>
@@ -7,26 +9,9 @@ type MixEditPageProps = {
 
 export default async function MixEditPage({ params }: MixEditPageProps) {
   const { slug } = await params
-  const recipe = getRecipeBySlug(slug)
+  const mix = await api.mix.bySlug({ slug })
 
-  if (
-    !recipe?.slug ||
-    !recipe.description ||
-    !recipe.ingredients ||
-    recipe.available === undefined
-  ) {
-    return <CreatedMixEdit slug={slug} />
-  }
+  if (!mix) notFound()
 
-  return (
-    <MixEdit
-      recipe={{
-        ...recipe,
-        slug: recipe.slug,
-        description: recipe.description,
-        ingredients: recipe.ingredients,
-        available: recipe.available,
-      }}
-    />
-  )
+  return <MixEdit mix={mix} />
 }

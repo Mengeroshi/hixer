@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useSyncExternalStore } from "react"
 import {
   Bookmark,
   House,
@@ -13,10 +12,15 @@ import {
 } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
-import { recipes, shop } from "~/data/afterglow"
-import { readCreatedMixes, subscribeCreatedMixes } from "~/lib/created-mixes"
+import { shop } from "~/data/afterglow"
 
-const noCreatedMixes: ReturnType<typeof readCreatedMixes> = []
+type MixTile = {
+  slug: string
+  name: string
+  image: string
+  house: boolean
+  description: string
+}
 
 const tabs = [
   { label: "Mixes", icon: LayoutGrid, current: true },
@@ -31,14 +35,9 @@ const nav = [
   { label: "Profile", icon: UserRound, current: true },
 ] as const
 
-export function StoreProfile() {
-  const created = useSyncExternalStore(
-    subscribeCreatedMixes,
-    readCreatedMixes,
-    () => noCreatedMixes,
-  )
+export function StoreProfile({ mixes }: { mixes: MixTile[] }) {
   const stats = [
-    { label: "Mixes", value: String(recipes.length + created.length) },
+    { label: "Mixes", value: String(mixes.length) },
     { label: "Followers", value: shop.followers },
     { label: "Following", value: String(shop.following) },
   ]
@@ -120,23 +119,12 @@ export function StoreProfile() {
           </div>
 
           <ul className="mt-3 grid grid-cols-3 gap-1 overflow-hidden rounded-2xl border-2 border-border bg-surface-5 shadow-shadow">
-            {created.toReversed().map((mix) => (
-              <li key={mix.slug}>
-                <Link href={`/mixes/${mix.slug}`} className="block">
-                  <figure className="grid aspect-square place-items-center bg-surface-5 p-2">
-                    <figcaption className="text-center text-xs font-heading">
-                      {mix.name}
-                    </figcaption>
-                  </figure>
-                </Link>
-              </li>
-            ))}
-            {recipes.map((recipe) => {
-              const tile = (
+            {mixes.map((mix) => {
+              const tile = mix.image ? (
                 <figure className="relative aspect-square overflow-hidden">
                   <img
-                    src={recipe.image}
-                    alt={recipe.name}
+                    src={mix.image}
+                    alt={mix.name}
                     className="size-full object-cover grayscale-[0.4] sepia-[0.35] saturate-50 contrast-95"
                   />
                   <span
@@ -148,16 +136,22 @@ export function StoreProfile() {
                     className="pointer-events-none absolute inset-0 bg-[#ecd3f5]/25 mix-blend-soft-light"
                   />
                   <figcaption className="sr-only">
-                    {recipe.name}
-                    {recipe.house ? ", house" : ""}
+                    {mix.name}
+                    {mix.house ? ", house" : ""}
+                  </figcaption>
+                </figure>
+              ) : (
+                <figure className="grid aspect-square place-items-center bg-surface-5 p-2">
+                  <figcaption className="text-center text-xs font-heading">
+                    {mix.name}
                   </figcaption>
                 </figure>
               )
 
               return (
-                <li key={recipe.name}>
-                  {recipe.slug ? (
-                    <Link href={`/mixes/${recipe.slug}`} className="block">
+                <li key={mix.slug}>
+                  {mix.description ? (
+                    <Link href={`/mixes/${mix.slug}`} className="block">
                       {tile}
                     </Link>
                   ) : (

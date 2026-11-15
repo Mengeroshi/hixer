@@ -118,7 +118,3 @@ export const recipes: Recipe[] = [
       "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?auto=format&fit=crop&w=600&q=80",
   },
 ]
-
-export function getRecipeBySlug(slug: string) {
-  return recipes.find((recipe) => recipe.slug === slug)
-}
