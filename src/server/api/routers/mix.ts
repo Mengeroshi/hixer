@@ -119,6 +119,41 @@ export const mixRouter = createTRPCRouter({
       })
     }),
 
+  feed: publicProcedure.query(async ({ ctx }) => {
+    const rows = await ctx.db.mix.findMany({
+      orderBy: [{ createdAt: "desc" }, { position: "asc" }],
+      select: {
+        slug: true,
+        name: true,
+        kind: true,
+        price: true,
+        image: true,
+        description: true,
+        available: true,
+        createdAt: true,
+        store: {
+          select: {
+            slug: true,
+            name: true,
+            handle: true,
+          },
+        },
+      },
+    })
+
+    return rows.map((row) => ({
+      slug: row.slug,
+      name: row.name,
+      kind: row.kind,
+      price: row.price,
+      image: row.image,
+      description: row.description,
+      available: row.available,
+      createdAt: row.createdAt,
+      store: row.store,
+    }))
+  }),
+
   mine: protectedProcedure.query(async ({ ctx }) => {
     return ctx.db.mix.findMany({
       where: { authorId: ctx.session.user.id },
