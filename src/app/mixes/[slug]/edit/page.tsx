@@ -1,6 +1,4 @@
-import { notFound } from "next/navigation"
-
-import { MixEdit } from "~/app/_components/mix-edit"
+import { CreatedMixEdit, MixEdit } from "~/app/_components/mix-edit"
 import { getRecipeBySlug } from "~/data/afterglow"
 
 type MixEditPageProps = {
@@ -17,7 +15,7 @@ export default async function MixEditPage({ params }: MixEditPageProps) {
     !recipe.ingredients ||
     recipe.available === undefined
   ) {
-    notFound()
+    return <CreatedMixEdit slug={slug} />
   }
 
   return (

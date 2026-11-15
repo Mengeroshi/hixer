@@ -2,11 +2,17 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState, type FormEvent } from "react"
+import { useState, useSyncExternalStore, type FormEvent } from "react"
 import { ArrowLeft, Plus, X } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
 import type { Recipe } from "~/data/afterglow"
+import {
+  createMixSlug,
+  readCreatedMix,
+  subscribeCreatedMixes,
+  writeCreatedMix,
+} from "~/lib/created-mixes"
 import {
   readMixOverride,
   writeMixOverride,
@@ -46,31 +52,52 @@ function removeItem(items: string[], index: number) {
   return items.filter((_, itemIndex) => itemIndex !== index)
 }
 
-export function MixEdit({ recipe }: MixEditProps) {
-  const router = useRouter()
-  const [draft, setDraft] = useState(() => initialState(recipe))
+const emptyDraft: MixOverride = {
+  name: "",
+  price: "",
+  description: "",
+  ingredients: [],
+  preparation: [],
+  tags: [],
+  available: true,
+}
+
+type MixFormProps = {
+  title: string
+  backHref: string
+  backLabel: string
+  image?: string
+  initial: MixOverride
+  onSave: (draft: MixOverride) => void
+}
+
+function MixForm({
+  title,
+  backHref,
+  backLabel,
+  image,
+  initial,
+  onSave,
+}: MixFormProps) {
+  const [draft, setDraft] = useState(initial)
 
   function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const price = draft.price.trim()
-    const name = draft.name.trim()
-    const description = draft.description.trim()
-    const ingredients = draft.ingredients.map((item) => item.trim()).filter(Boolean)
-    const preparation = draft.preparation.map((item) => item.trim()).filter(Boolean)
-    const tags = draft.tags.map((item) => item.trim()).filter(Boolean)
-
-    if (!name || !price || !description || ingredients.length === 0) return
-
-    writeMixOverride(recipe.slug, {
-      name,
-      price,
-      description,
-      ingredients,
-      preparation,
-      tags,
+    const next = {
+      name: draft.name.trim(),
+      price: draft.price.trim(),
+      description: draft.description.trim(),
+      ingredients: draft.ingredients.map((item) => item.trim()).filter(Boolean),
+      preparation: draft.preparation.map((item) => item.trim()).filter(Boolean),
+      tags: draft.tags.map((item) => item.trim()).filter(Boolean),
       available: draft.available,
-    })
-    router.push(`/mixes/${recipe.slug}`)
+    }
+
+    if (!next.name || !next.price || !next.description || next.ingredients.length === 0) {
+      return
+    }
+
+    onSave(next)
   }
 
   return (
@@ -80,21 +107,25 @@ export function MixEdit({ recipe }: MixEditProps) {
           <div className="flex-1 overflow-y-auto px-4 pb-4">
             <header className="flex items-center gap-3 py-4">
               <Link
-                href={`/mixes/${recipe.slug}`}
-                aria-label="Back to mix"
+                href={backHref}
+                aria-label={backLabel}
                 className="grid size-10 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
               >
                 <ArrowLeft className="size-4" />
               </Link>
-              <p className="text-sm font-heading">Edit mix</p>
+              <p className="text-sm font-heading">{title}</p>
             </header>
 
             <figure className="relative overflow-hidden rounded-2xl border-2 border-border shadow-shadow">
-              <img
-                src={recipe.image}
-                alt={draft.name || recipe.name}
-                className="aspect-square w-full object-cover grayscale-[0.4] sepia-[0.35] saturate-50 contrast-95"
-              />
+              {image ? (
+                <img
+                  src={image}
+                  alt={draft.name || title}
+                  className="aspect-square w-full object-cover grayscale-[0.4] sepia-[0.35] saturate-50 contrast-95"
+                />
+              ) : (
+                <div className="aspect-square bg-surface-5" />
+              )}
               <span
                 aria-hidden
                 className="pointer-events-none absolute inset-0 bg-[#f0e2d3]/55 mix-blend-multiply"
@@ -342,5 +373,83 @@ export function MixEdit({ recipe }: MixEditProps) {
         </form>
       </div>
     </div>
+  )
+}
+
+export function MixEdit({ recipe }: MixEditProps) {
+  const router = useRouter()
+
+  return (
+    <MixForm
+      title="Edit mix"
+      backHref={`/mixes/${recipe.slug}`}
+      backLabel="Back to mix"
+      image={recipe.image}
+      initial={initialState(recipe)}
+      onSave={(draft) => {
+        writeMixOverride(recipe.slug, draft)
+        router.push(`/mixes/${recipe.slug}`)
+      }}
+    />
+  )
+}
+
+export function MixCreate() {
+  const router = useRouter()
+
+  return (
+    <MixForm
+      title="New mix"
+      backHref="/"
+      backLabel="Back to profile"
+      initial={emptyDraft}
+      onSave={(draft) => {
+        const slug = createMixSlug(draft.name)
+        writeCreatedMix({ ...draft, slug })
+        router.push(`/mixes/${slug}`)
+      }}
+    />
+  )
+}
+
+export function CreatedMixEdit({ slug }: { slug: string }) {
+  const router = useRouter()
+  const mix = useSyncExternalStore(
+    subscribeCreatedMixes,
+    () => readCreatedMix(slug),
+    () => null,
+  )
+
+  if (!mix) {
+    return (
+      <div className="min-h-dvh bg-neutral-200 text-foreground">
+        <div className="mx-auto flex h-dvh w-full max-w-[430px] flex-col bg-background px-4">
+          <header className="flex items-center gap-3 py-4">
+            <Link
+              href="/"
+              aria-label="Back to profile"
+              className="grid size-10 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
+            >
+              <ArrowLeft className="size-4" />
+            </Link>
+            <p className="text-sm font-heading">Edit mix</p>
+          </header>
+          <p className="text-sm">This mix is not saved in this browser session.</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <MixForm
+      title="Edit mix"
+      backHref={`/mixes/${slug}`}
+      backLabel="Back to mix"
+      initial={mix}
+      onSave={(draft) => {
+        writeCreatedMix({ ...draft, slug })
+        router.push(`/mixes/${slug}`)
+      }}
+    />
   )
 }

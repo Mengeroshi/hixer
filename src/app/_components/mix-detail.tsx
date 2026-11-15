@@ -5,6 +5,7 @@ import { useSyncExternalStore } from "react"
 import { ArrowLeft, Pencil } from "lucide-react"
 
 import type { Recipe } from "~/data/afterglow"
+import { readCreatedMix, subscribeCreatedMixes } from "~/lib/created-mixes"
 import {
   readMixOverride,
   subscribeMixOverride,
@@ -56,19 +57,29 @@ export function MixDetail({ recipe }: MixDetailProps) {
           </header>
 
           <figure className="relative overflow-hidden rounded-2xl border-2 border-border shadow-shadow">
-            <img
-              src={mix.image}
-              alt={mix.name}
-              className="aspect-square w-full object-cover grayscale-[0.4] sepia-[0.35] saturate-50 contrast-95"
-            />
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[#f0e2d3]/55 mix-blend-multiply"
-            />
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-0 bg-[#ecd3f5]/25 mix-blend-soft-light"
-            />
+            {mix.image ? (
+              <img
+                src={mix.image}
+                alt={mix.name}
+                className="aspect-square w-full object-cover grayscale-[0.4] sepia-[0.35] saturate-50 contrast-95"
+              />
+            ) : (
+              <div className="grid aspect-square place-items-center bg-surface-5 p-4">
+                <span className="text-center text-sm font-heading">{mix.name}</span>
+              </div>
+            )}
+            {mix.image ? (
+              <>
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 bg-[#f0e2d3]/55 mix-blend-multiply"
+                />
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 bg-[#ecd3f5]/25 mix-blend-soft-light"
+                />
+              </>
+            ) : null}
           </figure>
 
           <div className="mt-4 flex items-start justify-between gap-3">
@@ -145,5 +156,50 @@ export function MixDetail({ recipe }: MixDetailProps) {
         </Link>
       </div>
     </div>
+  )
+}
+
+export function CreatedMixDetail({ slug }: { slug: string }) {
+  const mix = useSyncExternalStore(
+    subscribeCreatedMixes,
+    () => readCreatedMix(slug),
+    () => null,
+  )
+
+  if (!mix) {
+    return (
+      <div className="min-h-dvh bg-neutral-200 text-foreground">
+        <div className="mx-auto flex h-dvh w-full max-w-[430px] flex-col bg-background px-4">
+          <header className="flex items-center gap-3 py-4">
+            <Link
+              href="/"
+              aria-label="Back to profile"
+              className="grid size-10 place-items-center rounded-full border-2 border-border bg-surface-3 shadow-shadow"
+            >
+              <ArrowLeft className="size-4" />
+            </Link>
+            <p className="text-sm font-heading">Mix</p>
+          </header>
+          <p className="text-sm">This mix is not saved in this browser session.</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <MixDetail
+      recipe={{
+        name: mix.name,
+        kind: "Mix",
+        image: "",
+        price: mix.price,
+        slug: mix.slug,
+        description: mix.description,
+        ingredients: mix.ingredients,
+        preparation: mix.preparation,
+        tags: mix.tags,
+        available: mix.available,
+      }}
+    />
   )
 }
