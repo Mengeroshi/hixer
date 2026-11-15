@@ -4,35 +4,19 @@ description: >-
   Keeps this repo's memory on GitHub and ships with GitHub flow. Use on every
   feature, fix, or decision that should outlive the chat, including when the
   user says remember, don't forget, issue, branch, commit, merge, ready, or
-  starts work they will want later. Search or create one issue before editing,
-  keep requirements and decisions on that issue, and commit or merge to main
-  only after the user says the feature is ready.
+  starts work they will want later. Hold the issue until its context is
+  complete. Publish it only then, before the commit, and then create the
+  branch, commit, and merge to main. Do that only after the user says the
+  feature is ready.
 ---
 
 # GitHub memory
 
-GitHub is the memory. The open issue is the spec. Chat is scratch. A new session starts by reading GitHub, not by guessing.
+GitHub is the memory once an issue is published. Until then the spec stays in the chat. Do not create or update an issue, branch, commit, or pull request while the context is still incomplete.
 
-Code stays local until the user says the feature is ready. Requirements still live on the issue, so both of you can see them without a commit.
+## Full context
 
-## Start of a session
-
-1. `gh issue list --state open --limit 30` and `git status` plus `git branch --show-current`.
-2. On a branch named `<n>-<slug>`, run `gh issue view <n>` and continue that issue.
-3. On `main` with a dirty tree, stop. Ask which open issue it belongs to before editing more.
-
-If `gh` cannot see the repo, stop and say so. Do not invent a second memory file.
-
-## What gets an issue
-
-A feature or a fix the user wants kept. Search first: `gh issue list --search "<words>" --state all`. Reuse a match. A question, a review, or a one-line typo inside the current feature does not get its own issue.
-
-A bug found while building something else gets a new issue and stays unfixed on this branch.
-
-## Before editing
-
-1. Create the issue if none exists. Title: `feat: <verb phrase>` or `fix: <verb phrase>`.
-2. Body, then keep editing this body as requirements change. Comment only to record a decision or a rejected option.
+The issue is publishable when the user says it is ready ("ready", "ship it", "commit", or "merge") and the body below is filled in. "Looks good" and "keep going" are not ready. Open questions must be empty or answered. A half-specified feature is not published.
 
 ```markdown
 ## Outcome
@@ -44,20 +28,26 @@ A bug found while building something else gets a new issue and stays unfixed on 
 - [ ]
 ```
 
-3. From an up-to-date `main`: `git checkout -b <n>-<slug>`. `<slug>` is the title after the prefix, kebab-case, four words or fewer. Example: issue 12 `feat: persist session on the issue` → branch `12-persist-session`.
-4. Edit only on that branch. Never commit to `main`.
+Title: `feat: <verb phrase>` or `fix: <verb phrase>`.
 
-## While working
+## While the context is open
 
-Update the issue when a requirement, decision, or open question changes. Check off requirements as they land in the working tree. Do not commit, push, or open a pull request.
+Edit locally. Do not publish the issue. Do not create a branch. Do not commit or push.
 
-## Ready
+A question, a review, or a typo inside the current feature does not get its own issue. A separate bug stays in the chat until that bug has full context, then it ships on its own.
 
-Commit and merge only when the user says the feature is ready: "ready", "ship it", "commit", or "merge". "Looks good" and "keep going" are not ready.
+## Ship
 
-1. Update the issue so the body matches what will ship.
-2. One commit on the feature branch. Subject is the issue title. Body includes `Closes #<n>`.
-3. Push, `gh pr create` with that title and `Closes #<n>`, then `gh pr merge`.
-4. Stop if the merge fails. Do not force-push or skip hooks.
+When the context is full, do these in order. The issue exists before the commit.
 
-After merge, the issue is the record. Do not also write a changelog or a decision doc.
+1. Search `gh issue list --search "<words>" --state all`. Reuse a match only if it is this same feature. Otherwise `gh issue create` with the title and the body above.
+2. From the current `main` work, `git checkout -b <n>-<slug>`. `<slug>` is the title after the prefix, kebab-case, four words or fewer. Example: issue 12 `feat: persist session on the issue` → `12-persist-session`.
+3. One commit on that branch. Subject is the issue title. Body includes `Closes #<n>`.
+4. Push, `gh pr create` with that title and `Closes #<n>`, then `gh pr merge`.
+5. Stop if the merge fails. Do not force-push or skip hooks.
+
+After merge, that issue is the record. Do not also write a changelog or a decision doc.
+
+## Start of a session
+
+`gh issue list --state open --limit 30`, `git status`, and `git branch --show-current`. Read an open issue only to continue a feature that was already published. In-progress work has no issue yet. If `gh` cannot see the repo, stop and say so.
