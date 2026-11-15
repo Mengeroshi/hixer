@@ -7,12 +7,18 @@ function loginPath(callbackUrl: string) {
   return `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
 }
 
-export async function requireStoreOwner(callbackUrl: string) {
+export async function requireSession(callbackUrl: string) {
   const session = await auth()
 
   if (!session?.user) {
     redirect(loginPath(callbackUrl))
   }
+
+  return session
+}
+
+export async function requireStoreOwner(callbackUrl: string) {
+  const session = await requireSession(callbackUrl)
 
   if (!session.user.isStore) {
     redirect("/")
