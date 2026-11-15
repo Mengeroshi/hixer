@@ -51,27 +51,29 @@ export function LoginForm({
           />
         </label>
 
-        <label className="flex items-center justify-between gap-3 py-1">
-          <span className="text-sm font-heading">I&apos;m a store</span>
-          <input type="hidden" name="isStore" value={isStore ? "on" : "off"} />
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isStore}
-            aria-label="I'm a store"
-            onClick={() => setIsStore((current) => !current)}
-            className={`relative h-8 w-14 shrink-0 rounded-full border-2 border-border shadow-shadow ${
-              isStore ? "bg-surface-2" : "bg-background"
-            }`}
-          >
-            <span
-              aria-hidden
-              className={`absolute top-0.5 left-0.5 size-6 rounded-full border-2 border-border bg-background transition-transform ${
-                isStore ? "translate-x-6" : "translate-x-0"
+        {mode === "signup" ? (
+          <label className="flex items-center justify-between gap-3 py-1">
+            <span className="text-sm font-heading">I&apos;m a store</span>
+            <input type="hidden" name="isStore" value={isStore ? "on" : "off"} />
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isStore}
+              aria-label="I'm a store"
+              onClick={() => setIsStore((current) => !current)}
+              className={`relative h-8 w-14 shrink-0 rounded-full border-2 border-border shadow-shadow ${
+                isStore ? "bg-surface-2" : "bg-background"
               }`}
-            />
-          </button>
-        </label>
+            >
+              <span
+                aria-hidden
+                className={`absolute top-0.5 left-0.5 size-6 rounded-full border-2 border-border bg-background transition-transform ${
+                  isStore ? "translate-x-6" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </label>
+        ) : null}
 
         {error ? (
           <p className="rounded-xl border-2 border-border bg-main px-3 py-2 text-sm">
