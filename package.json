@@ -6,10 +6,12 @@
   "scripts": {
     "preinstall": "node -e \"if (!String(process.env.npm_config_user_agent).startsWith('pnpm/')) { console.error('Use pnpm. npm and yarn are not supported.'); process.exit(1) }\"",
     "build": "next build",
+    "vercel-build": "prisma db push && prisma db seed && next build",
     "check": "next lint && tsc --noEmit",
     "db:generate": "prisma migrate dev",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "dev": "next dev --turbo",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
