@@ -38,6 +38,15 @@ export async function ensureOwnedStore(user: {
     return existing
   }
 
+  const owner = await db.user.findUnique({
+    where: { id: user.id },
+    select: { id: true },
+  })
+  if (!owner) {
+    // Stale session id — auth jwt callback should have cleared this first
+    throw new Error("Cannot create store: user no longer exists")
+  }
+
   const label = profileLabel(user)
   const taken = new Set(
     (await db.store.findMany({ select: { slug: true } })).map(
