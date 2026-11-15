@@ -32,7 +32,7 @@ export const recipes: Recipe[] = [
     slug: "black-sesame-yuzu-honey",
     price: "$6.50",
     image:
-      "https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?auto=format&fit=crop&w=600&q=80",
+      "https://n1p5950t7g.ufs.sh/f/36t4cSJfbUkVtgyN2fjhPC1jWT5JZxHasNlGuXi0cI27rnYM",
     description:
       "Toasted black sesame ice cream with pockets of bright yuzu honey. Savory, sweet, and a little sour in the same scoop.",
     ingredients: [
@@ -56,7 +56,7 @@ export const recipes: Recipe[] = [
     kind: "Smoothie",
     price: "$7.00",
     image:
-      "https://images.unsplash.com/photo-1505252585461-04db1eb84625?auto=format&fit=crop&w=600&q=80",
+      "https://n1p5950t7g.ufs.sh/f/36t4cSJfbUkVghxNua1vtm53EkAsJ9p7ZTexMcWzihDfCOQ4",
     source: "http://www.tadaimatte.com/2012/09/kurogoma-smoothie.html",
   },
   {
@@ -64,7 +64,7 @@ export const recipes: Recipe[] = [
     kind: "Smoothie",
     price: "$7.50",
     image:
-      "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=600&q=80",
+      "https://n1p5950t7g.ufs.sh/f/36t4cSJfbUkVN83SQ5BHIE1UGt6vXVouYQjscyk0znMhgqLD",
     source:
       "https://reneevoltaire.se/en/blogs/cook/hojichasmoothie-med-svarta-sesamfron",
   },
@@ -73,7 +73,7 @@ export const recipes: Recipe[] = [
     kind: "Ice cream",
     price: "$6.50",
     image:
-      "https://images.unsplash.com/photo-1488900128323-21503983a07e?auto=format&fit=crop&w=600&q=80",
+      "https://n1p5950t7g.ufs.sh/f/36t4cSJfbUkV4ofm3uGN97C6bd510slMQyJ2zxEOPFfWckDm",
     source:
       "https://gigazine.net/gsc_news/en/20240827-haagen-dazs-greencraft-houjicha-kuromitsu/",
   },
@@ -82,7 +82,7 @@ export const recipes: Recipe[] = [
     kind: "Smoothie",
     price: "$7.50",
     image:
-      "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80",
+      "https://n1p5950t7g.ufs.sh/f/36t4cSJfbUkVIccKTDvOPHphkWnQsTc5vMaerGgBzlwtjKq8",
     source: "https://www.yutea.com/blogs/recipes/hojicha-smoothie",
   },
   {
@@ -91,7 +91,7 @@ export const recipes: Recipe[] = [
     price: "$6.00",
     house: true,
     image:
-      "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=600&q=80",
+      "https://n1p5950t7g.ufs.sh/f/36t4cSJfbUkVvNFNcVxhRAXQtbra1qf9Ipc4NUJoOsdlV7m3",
   },
   {
     name: "Night yuzu float",
@@ -99,7 +99,7 @@ export const recipes: Recipe[] = [
     price: "$8.00",
     house: true,
     image:
-      "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80",
+      "https://n1p5950t7g.ufs.sh/f/36t4cSJfbUkVFWUplU93LwOMtnY0bdrBzSmP7UIGpajHqxh6",
   },
   {
     name: "Pink pepper cold brew",
@@ -107,7 +107,7 @@ export const recipes: Recipe[] = [
     price: "$5.50",
     house: true,
     image:
-      "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=600&q=80",
+      "https://n1p5950t7g.ufs.sh/f/36t4cSJfbUkVHcckDajo8pNMQySsK73wGkPZX1O4r6FcHjmU",
   },
   {
     name: "Sesame cold foam",
@@ -115,6 +115,6 @@ export const recipes: Recipe[] = [
     price: "$5.50",
     house: true,
     image:
-      "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?auto=format&fit=crop&w=600&q=80",
+      "https://n1p5950t7g.ufs.sh/f/36t4cSJfbUkVSBEq1T0eiQ4VhvbBL7Rq12ty5JA8OUMkWmKT",
   },
 ]

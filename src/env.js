@@ -18,6 +18,7 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
     PEY_API_KEY: z.string().min(1),
     PEY_BANK_ACCOUNT_ID: z.string().min(1).optional(),
+    UPLOADTHING_TOKEN: z.string().min(1),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -41,6 +42,7 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     PEY_API_KEY: process.env.PEY_API_KEY,
     PEY_BANK_ACCOUNT_ID: process.env.PEY_BANK_ACCOUNT_ID,
+    UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
     NODE_ENV: process.env.NODE_ENV,
   },
   /**
