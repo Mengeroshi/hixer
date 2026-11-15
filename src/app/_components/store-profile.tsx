@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
   Bookmark,
   House,
@@ -110,8 +111,8 @@ export function StoreProfile() {
           </div>
 
           <ul className="mt-3 grid grid-cols-3 gap-1 overflow-hidden rounded-2xl border-2 border-border bg-surface-5 shadow-shadow">
-            {recipes.map((recipe) => (
-              <li key={recipe.name}>
+            {recipes.map((recipe) => {
+              const tile = (
                 <figure className="relative aspect-square overflow-hidden">
                   <img
                     src={recipe.image}
@@ -131,8 +132,20 @@ export function StoreProfile() {
                     {recipe.house ? ", house" : ""}
                   </figcaption>
                 </figure>
-              </li>
-            ))}
+              )
+
+              return (
+                <li key={recipe.name}>
+                  {recipe.slug ? (
+                    <Link href={`/mixes/${recipe.slug}`} className="block">
+                      {tile}
+                    </Link>
+                  ) : (
+                    tile
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </div>
 
