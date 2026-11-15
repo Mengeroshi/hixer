@@ -16,7 +16,11 @@ function cartItemCount(cart: StoreCart) {
 }
 
 function hasBottomNav(pathname: string) {
-  return pathname === "/profile" || /^\/stores\/[^/]+$/.test(pathname)
+  return (
+    pathname === "/profile" ||
+    pathname.startsWith("/payment/") ||
+    /^\/stores\/[^/]+$/.test(pathname)
+  )
 }
 
 export function ViewCartBar() {
@@ -34,7 +38,11 @@ export function ViewCartBar() {
   }
 
   const cartPath = `/stores/${cart.storeSlug}/cart`
-  if (pathname === cartPath || pathname === "/login") {
+  if (
+    pathname === cartPath ||
+    pathname === "/login" ||
+    pathname.startsWith("/payment/")
+  ) {
     return null
   }
 

@@ -130,6 +130,17 @@ export function addToStoreCart(
   return existing
 }
 
+export function clearStoreCart(storeSlug: string) {
+  const carts = readCarts()
+  if (!carts[storeSlug]) {
+    return
+  }
+  delete carts[storeSlug]
+  const nextActive = firstNonEmptyStoreSlug(carts)
+  setActiveStoreSlug(nextActive)
+  writeCarts(carts)
+}
+
 export function setStoreCartItemQuantity(
   storeSlug: string,
   mixSlug: string,

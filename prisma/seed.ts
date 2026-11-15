@@ -13,6 +13,11 @@ function slugify(name: string) {
   return base || "mix"
 }
 
+const defaultPayout = {
+  payoutName: "Ramón Orraca",
+  payoutClabe: "012180015826225713",
+} as const
+
 const stores = [
   {
     slug: "afterglow",
@@ -23,6 +28,7 @@ const stores = [
     bio: "Ice cream, smoothies, and a few coffees.",
     followers: shop.followers,
     following: shop.following,
+    ...defaultPayout,
     recipes,
   },
   {
@@ -34,6 +40,7 @@ const stores = [
     bio: "Matcha, oat foam, and late-night soft serve.",
     followers: "840",
     following: 42,
+    ...defaultPayout,
     recipes: [
       {
         name: "Hojicha cloud",
@@ -72,6 +79,7 @@ const stores = [
     bio: "Small-batch cones, roasted nuts, and warm toppings.",
     followers: "2.1k",
     following: 63,
+    ...defaultPayout,
     recipes: [
       {
         name: "Black sesame cone",
@@ -129,6 +137,8 @@ async function seedStore(entry: (typeof stores)[number]) {
       bio: entry.bio,
       followers: entry.followers,
       following: entry.following,
+      payoutName: entry.payoutName,
+      payoutClabe: entry.payoutClabe,
       ownerId: owner.id,
     },
     create: {
@@ -138,6 +148,8 @@ async function seedStore(entry: (typeof stores)[number]) {
       bio: entry.bio,
       followers: entry.followers,
       following: entry.following,
+      payoutName: entry.payoutName,
+      payoutClabe: entry.payoutClabe,
       ownerId: owner.id,
     },
   })
